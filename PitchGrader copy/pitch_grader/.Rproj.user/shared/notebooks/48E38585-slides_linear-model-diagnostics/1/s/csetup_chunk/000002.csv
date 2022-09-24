@@ -1,0 +1,36 @@
+"0","# packages"
+"0","library(tidyverse)"
+"2","Registered S3 methods overwritten by 'dbplyr':
+  method         from
+  print.tbl_lazy     
+  print.tbl_sql      
+"
+"2","[30m── [1mAttaching packages[22m ───────────────────────────────────────────────────── tidyverse 1.3.1 ──[39m
+"
+"2","[30m[32m✓[30m [34mpurrr  [30m 0.3.4     [32m✓[30m [34mforcats[30m 0.5.1[39m
+"
+"2","[30m── [1mConflicts[22m ──────────────────────────────────────────────────────── tidyverse_conflicts() ──
+[31mx[30m [34mpsych[30m::[32m%+%()[30m               masks [34mggplot2[30m::%+%()
+[31mx[30m [34mpsych[30m::[32malpha()[30m             masks [34mggplot2[30m::alpha()
+[31mx[30m [34mneuralnet[30m::[32mcompute()[30m       masks [34mdplyr[30m::compute()
+[31mx[30m [34mmosaic[30m::[32mcount()[30m            masks [34mdplyr[30m::count()
+[31mx[30m [34mpurrr[30m::[32mcross()[30m             masks [34mmclust[30m::cross(), [34mmosaic[30m::cross()
+[31mx[30m [34mmosaic[30m::[32mdo()[30m               masks [34mdplyr[30m::do()
+[31mx[30m [34mtidyr[30m::[32mexpand()[30m            masks [34mMatrix[30m::expand()
+[31mx[30m [34mdplyr[30m::[32mfilter()[30m            masks [34mstats[30m::filter()
+[31mx[30m [34mggstance[30m::[32mgeom_errorbarh()[30m masks [34mggplot2[30m::geom_errorbarh()
+[31mx[30m [34mkableExtra[30m::[32mgroup_rows()[30m   masks [34mdplyr[30m::group_rows()
+[31mx[30m [34mdplyr[30m::[32mlag()[30m               masks [34mstats[30m::lag()
+[31mx[30m [34mlatticeExtra[30m::[32mlayer()[30m      masks [34mggplot2[30m::layer()
+[31mx[30m [34mpurrr[30m::[32mmap()[30m               masks [34mmclust[30m::map()
+[31mx[30m [34mtidyr[30m::[32mpack()[30m              masks [34mMatrix[30m::pack()
+[31mx[30m [34mmosaic[30m::[32mstat()[30m             masks [34mggplot2[30m::stat()
+[31mx[30m [34mmosaic[30m::[32mtally()[30m            masks [34mdplyr[30m::tally()
+[31mx[30m [34mtidyr[30m::[32munpack()[30m            masks [34mMatrix[30m::unpack()[39m
+"
+"0","library(kableExtra)"
+"0",""
+"0","# settings"
+"0","knitr::opts_chunk$set(comment = "" "")"
+"0",""
+"0","theme_set(theme_classic())"

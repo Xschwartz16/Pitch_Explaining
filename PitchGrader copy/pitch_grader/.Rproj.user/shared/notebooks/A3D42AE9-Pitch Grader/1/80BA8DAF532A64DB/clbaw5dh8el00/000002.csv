@@ -1,0 +1,7 @@
+"0","#some_pitches <- some_pitches %>% mutate(count = paste(balls, strikes, sep = ""-""))"
+"0",""
+"0",""
+"0","#some_pitches%>%select(count, woba_value)%>%drop_na()%>%group_by(count)%>%summarise(woba_value=mean(woba_value_count))"
+"0",""
+"0","#some_pitches2 <- some_pitches %>% select(des, count, delta_run_exp, description) %>% filter(is.na(delta_run_exp))"
+"0",""

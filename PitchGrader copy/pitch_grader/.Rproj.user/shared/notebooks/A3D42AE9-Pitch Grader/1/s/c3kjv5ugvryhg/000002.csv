@@ -1,0 +1,2 @@
+"0","ggplot(data = next_pitch_woba %>% select(wOBA) %>% drop_na(), aes(x = wOBA)) +"
+"0","  geom_density()"

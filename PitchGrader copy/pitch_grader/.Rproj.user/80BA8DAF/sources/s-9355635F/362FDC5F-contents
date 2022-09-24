@@ -1,0 +1,230 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\graphicspath{ {./imgs/} }
+
+\title{KKT Tutorial}
+\author{Dagim Belete and Daniel Flores García}
+\date{March 11 2022}
+
+\begin{document}
+
+\maketitle
+
+\section{Formulating our problem}
+
+Imagine we have an optimization problem, meaning we have some objective function $f$ that we'd like to optimize. For this tutorial, let's assume that we are trying to \textit{minimize} rather than maximize our objective function. In other words, we seek to find:
+
+\[
+    \min_x f(x)
+\]
+ 
+We have just formulated our problem as an \textit{unconstrained optimization} problem. However, as it turns out, sometimes in life there are factors that constrain you and make your problem harder to solve. We can define some of those pesky constraints as inequality constraints:
+
+\[
+    g_i(x) \leq 0, \: i = 1,..,n
+\]
+
+where $n$ is the number of constraints you'd like to define for your problem. We could also define equality constraints:
+
+\[
+    h_j(x) = 0, \: j = 1,..,m 
+\]
+
+but, for reasons explained later in this document, we can leave this out of our problem. Now, let's reformulate our original problem to include these newly defined constraints:
+\[
+    \min_x f(x)
+\]
+\[
+    s.t. \:\: g_i(x) \leq 0, \: i = 1,...,n
+\]
+
+And using vector notation:
+
+\[
+    \min_x f(x)
+\]
+\[
+    s.t. \:\: g(x) \preceq 0
+\]
+
+To even get close to solving the problem, we are going to assume that $f$ and $g$ are \textbf{convex}. Intuitively, a function is said to be convex if for all line segments you can draw between two points on the graph of the function, no part of the line segment lies below the graph. Examples of convex functions include:
+
+\[f(x) = e^x\]
+
+\[f(x,y) = x^2 + y^2\]
+
+Going back to the question at hand, we need to convert a two level program into one. To do so, We can think of these constraints in terms of a penalty function. This penalty function in its return value would somehow show that satisfying these constraints is good, and breaking these constraints is VERY bad. An example of such a penalty function for the constraint:
+$x^2 + y^2 \leq 1 $ would be the piecewise function :
+\begin{center}
+    Penalty(x, y) = \begin{cases} 
+        0 & x^2 + y^2 \leq 1 \\
+        \infty & otherwise 
+    \end{cases}\\
+\end{center}
+ \[\min_{x,y} f(x,y) + Penalty(x,y)\] \\
+In the case of minimization, any input that returns a very high value from the penalty function becomes a lot less likely to be the optimal point.
+However, those types of penalty functions are hard to work with mathematically. The above example's penalty function can be re-written to be a linear representation of the penalty.
+\begin{center}
+$ Linear Penalty(x,y) = m(x^2 + y^2 - 1) $\\
+$m$ - a slope we select
+\end{center}
+The previous penalty can be equated to the value of when m is maximized for $m \geq 0$.
+
+\[ Penalty(x,y) = \max_{m\geq0} m(x^2 + y^2 - 1) \]
+
+If x, y follow the constraint, the arithmetic in the brackets would be negative or zero, leading m = 0 to be a maximizing value. In this case, as long as the constraint is not broken, there is no penalty. Otherwise, if the arithmetic in the brackets return a positive number, the maximizing m value is however large m can be, positive infinity. \\
+When generalizing for more complex optimizations, we look at $\max$ over $\lambda$, where $\lambda$ is a vector, where each element is a slope corresponding to a constraint $g_i(x) \in \boldsymbol g(x)$.    \\
+Then in the general case, the bi-level optimization problem can be written as follows. 
+\[\min_x\max_{\boldsymbol\lambda\succeq0} f(x) +\boldsymbol\lambda^\top \boldsymbol g(x)\]
+
+To help in simplifying the problem, in the above equation we switch: \[\min_x and \max_{\boldsymbol\lambda\succeq0}\] 
+To show what value changes that leads to, let's look at the following equation:
+\[\min_a\max_{b} f(a,b) \]
+
+\[\includegraphics[scale = 0.8]{imgs/maxmin.png}\]
+the value of "a" is chosen to be the row at which "b"'s max in minimum. In the image above, the drawn in row represents that row, where "b" chooses the max from the min column selected by "a". In the above image, if we want to look at: \[\max_{b}\min_a f(a,b)\] regardless of the  value "b" for the column, the "a" min can choose any point on that row and all points on that row are smaller or equal to  the value from the min max.
+\[\max_{b}\min_a f(a,b) \leq \min_a\max_{b} f(a,b) \]
+Similarly:
+\[\max_{\boldsymbol\lambda\succeq0}\min_x f(x) +\boldsymbol\lambda^\top \boldsymbol g(x) \leq \min_x\max_{\boldsymbol\lambda\succeq0} f(x) +\boldsymbol\lambda^\top \boldsymbol g(x)\]
+
+Let's reformulate our problem one last time:
+\[
+    \min_x f(x)
+\]
+\[
+    s.t. \:\: \boldsymbol{g}(x) \preceq 0
+\]
+
+Where $\lambda$ is a vector that you can think about as the penalty for going over the constraint.
+
+From now on, we'll refer to this problem as the \textbf{primal} problem.\cite{alfeld}
+
+\section{The KKT Conditions}
+
+
+Consider the \textbf{dual} version of our problem:
+
+\[
+    \max_{\lambda \succeq 0} \min_x f(x) + \lambda^\top g(x0)
+\]
+
+Before we go deeper into our problem, let's answer why we were able to drop our equality constraints. Let's write our problem with the equality constraints:
+\[
+    \min_x f(x)
+\]
+\[
+    s.t. \:\: \boldsymbol{g}(x) \preceq \boldsymbol{0},  
+         \:\boldsymbol{h}(x) = \boldsymbol{0}
+\]
+The dual version in this case would look like:
+\[\max_{\boldsymbol\lambda\succeq0}\min_x f(x) +\boldsymbol\lambda^\top \boldsymbol g(x) + \boldsymbol v^\top \boldsymbol h(x) \]
+However, each equality constraint can be written in the form of an equality constraint where one equality is an upper bound and the other is a lower bound. Leaving the equality constraint to be an equality constraint and making it possible to drop such constraints in the equation.
+
+An optimal solution to our dual and primal problems of the form $x^*, \lambda^*$ must fulfill the KKT conditions (and some other assumptions we will touch on later). But let's talk about the KKT conditions themselves first:
+
+\begin{itemize}
+    \item \textbf{KKT.1: Stationarity}
+\[
+    \nabla_x [f(x) + \lambda^{*^\top} g(x)]\rvert_{x^*} = 0
+\]
+    If you are familiar with finding the minimum of an unconstrained function, this should feel familiar. Indeed, we're setting the gradient of that expression to be equal to zero, which is what we would do to an unconstrained function to find a minimum. But there is also an intuitive explanation for this condition. Consider the following graph:
+
+    \begin{center}
+    \includegraphics[scale = 0.15]{kkt-illus1.jpg}
+    \end{center}
+
+    Let's look at point $x$. Remember that we seek to minimze our objective function $f$. So we'd like our point $x$ to be moved away from the direction that $\nabla_x f$ points to. So, moving $x$ anywhere in the blue-shaded region would improve our objective function. Similarly, because the lower the value of $g(x)$ the more we satify our constraints, we'd like our $x$ to be moved away from $\nabla_x g$. Thus, moving $g(x)$ anywhere in the red-shaded region would make our constraints "happier". Notice how in this graph there is an overlap between the red and blue regions. This means that we could move $x$ to that overlap and improve our objective function and satisfy our constraints more. But that would mean that $x$ is not optimal. To be optimal, there shouldn't be an overlap between our regions, and this would only occur if $\nabla_x f$ and $\nabla_x g$ pointed away from each other:
+
+    \begin{center}
+    \includegraphics[scale = 0.15]{kkt-illus2.jpg}
+    \end{center}
+
+    In other words, the gradient of $f$ at an must be inversely proportional to the gradient of $g$ at $x$. We can re-write KKT.1 to express this idea mathematically:
+
+\[
+    \nabla_x f(x) = -\lambda^\top \nabla_xg(x)
+\]
+    
+    \item KKT.2 \textbf{Primal Feasability}
+
+\[
+    g(x^*) \preceq 0
+\]
+
+    We had already met this condition before when we were formulating our problem in vector notation.
+
+    \item KKT.3 \textbf{Dual Feasability}
+    
+\[
+    \lambda^* \preceq 0
+\]
+
+    Imagine if $\lambda$ could be negative. Now, imagine if $g(x)$ was negative, and therefore satisfying our constraint. But in that case, in the $\max_{\lambda}$ part of the problem, $\lambda$ could penalize us by being negative, by multiplying the negative $g(x)$ with a huge value of $\lambda$. That wouldn't make any sense. So we assert that $\lambda^* \preceq 0$.
+
+    \item KKT.4 \textbf{Complementary Slackness}
+\[
+    \lambda^{*^T} g(x^*) = 0
+\]
+    The last condition gives us more insight into the relationship between our penalization term $\lambda$ and our constraint function $g(x)$. It basically tells us that our optimal solution will match one of the following cases:
+    \begin{enumerate}
+        \item 1. $g(x)$ is on the negative side of the real numbers. If this happens, we don't want to be penalized for being well inside our constraint, so $\lambda$ should leave us alone and be equal to zero.
+        \item 2. $g(x)$ is right at zero. We're at the edge of our constraint, so the whole expression will automatically be zero without $\lambda$'s input.\cite{video}
+    \end{enumerate}
+
+\section{Necessity and Sufficiency}
+
+There's one more relationship we should touch on: the one between our dual and final problem. If \textbf{weak duality} holds, then:
+
+\[
+    \max_{\lambda \succeq 0} \min_x f(x) + \lambda^\top g(x0) \leq \min_x \max_{\lambda \succeq 0}  f(x) + \lambda^\top g(x0)
+\]
+
+and the solution to our dual problem provides a lower bound to our primal problem. However, if \textbf{strong duality} holds, then:
+
+\[
+    \max_{\lambda \succeq 0} \min_x f(x) + \lambda^\top g(x0) = \min_x \max_{\lambda \succeq 0}  f(x) + \lambda^\top g(x0)
+\]
+
+and our solution to the dual problem will be the same as the solution to the primal problem. 
+
+Consider an optimal solution $x*, \lambda^*$ to the primal and dual problems. If \textbf{strong duality} holds, then $x^*, \lambda^*$ satisfy the KKT conditions. In other words, the KKT conditions are \textbf{necessary} for an optimal solution, \textit{if} strong duality holds.
+
+
+Now, if all we know is that some $x, \lambda$ satisfy the KKT condition. This implies that strong duality holds, and so $x, \lambda$ are optimal solutions. In other words, the KKT conditions are \textbf{sufficient} to say that a point is optimal provided they are fulfilled.\cite{cmu}
+
+Strong Duality hold if either of the following conditions are met:\cite{ber} 
+\begin{enumerate}
+    \item If slater's conditions are satified:
+    \begin{enumerate}
+        \item The primal problem is convex
+        \item It is strictly feasible, i.e. $x_0$  s.t. $\boldsymbol g(x_0) \preceq \boldsymbol 0$ 
+    \end{enumerate}
+    \item If the function we are trying to minimize is quadratic convex and all the constraint functions are affine, strong duality holds provided one of the primal or dual problems is feasible
+
+\end{enumerate}
+
+After explaining KKT conditions, the history of KKT conditions is worth to explore very shortly. KKT conditions were formerly known as KT conditions after Kuhn and Tucker, who first published in 1951 and for most of the time kept its name. Someone recently the master's thesis work of William Karush was found to have states KKT conditions earlier in 1939. Leading to the name change to KKT (Karush-Kuhn-Tucker).\cite{his} 
+
+
+
+
+\end{itemize}
+
+\begin{thebibliography}{5}
+    \bibitem{alfeld}
+    Alfeld, S. A. (2022, March 6). \textit{KKT3}. 
+    \bibitem{video}
+    Visually Explained. (2021, August 5). \textit{The Karush–Kuhn–Tucker (KKT) Conditions and the Interior Point Method for Convex Optimization} [Video]. Youtube. \href{https://www.youtube.com/watch?v=uh1Dk68cfWs}{https://www.youtube.com/watch?v=uh1Dk68cfWs}
+    \bibitem{cmu}
+    Tibshirani, R. (2016). \textit{Lecture 12: KKT conditions}. Retrieved from \href{https://www.stat.cmu.edu/~ryantibs/convexopt-F16/scribes/kkt-scribed.pdf}{https://www.stat.cmu.edu/~ryantibs/convexopt-F16/scribes/kkt-scribed.pdf}  
+    \bibitem{ber}
+    El Ghaoui, L. (2021). \textit{Hyper-Textbook: Optimization Models and Applications}. \href{https://inst.eecs.berkeley.edu/~ee127/sp21/livebook/index.html}{https://inst.eecs.berkeley.edu/~ee127/sp21/livebook/index.html}
+    \bibitem{his}
+    Cottle, R. W. (2010). \textit{William Karush and the KKT theorem}. \href{https://www.math.uni-bielefeld.de/documenta/vol-ismp/41_cottle-richard.pdf}{https://www.math.uni-bielefeld.de/documenta/vol-ismp/41_cottle-richard.pdf}
+
+\end{thebibliography}
+
+\end{document}

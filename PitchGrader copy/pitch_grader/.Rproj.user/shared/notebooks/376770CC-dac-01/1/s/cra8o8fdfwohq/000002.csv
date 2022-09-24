@@ -1,0 +1,6 @@
+"0","#Fixing education variable"
+"0",""
+"0","bankdata <- bankdata %>% mutate(edu_fixed = ifelse(educ <= 10, ""8-10"","
+"0","                                       ifelse(educ > 14, ""15+"", ""11-14""))) %>% select(-educ)"
+"0",""
+"0","ggplot(bankdata, aes(y= bsal, fill = edu_fixed)) + geom_boxplot() + labs(y = ""Starting Salary ($)"")"

@@ -1,0 +1,212 @@
+---
+title: "STAT 456 Lab 4"
+author: "YOUR NAME"
+date: "\\today"
+output: 
+  pdf_document:
+    fig_width: 3.6
+    fig_height: 2.4
+    highlight: kate
+    number_sections: true
+classoption: fleqn
+geometry: margin=0.75in
+linestretch: 1.25
+fontfamily: cmbright
+colorlinks: true
+citecolor: blue
+urlcolor: blue
+header-includes: 
+  # header/footer formats
+  - \usepackage{fancyhdr}\pagestyle{fancy}\fancyhf{}\cfoot{\thepage}
+  - \lhead{\footnotesize STAT 456 \copyright Brittney E. Bailey}
+  # formats for headings
+  - \usepackage[compact]{titlesec}
+  - \titleformat{\section}[hang]{\setstretch{1}\ifnum\value{section}>0 \newpage \fi \Large }{\bfseries Problem \thesection}{5mm}{}[]
+  - \titleformat{\subsection}[hang]{\vspace{11pt}\setstretch{1}\large}{\large\bfseries\thesubsection}{5mm}{}[]
+  - \titleformat{\subsubsection}[hang]{\bfseries}{}{0mm}{}[]
+  # additional text formatting
+  - \AtBeginDocument{\raggedright}
+  - \AtBeginEnvironment{quote}{\setstretch{1}\large}
+  - \AtBeginEnvironment{Shaded}{\setstretch{1}}
+  - \definecolor{shadecolor}{RGB}{248,248,255}
+  # math packages
+  - \usepackage{amsthm, mathtools, dsfont, bm, mleftright, cancel}
+  # LaTeX shortcuts for math typesetting
+  ## statistical functions
+  - \DeclareMathOperator{\E}{E}
+  - \DeclareMathOperator{\Var}{Var}
+  - \DeclareMathOperator{\V}{V}
+  - \DeclareMathOperator{\se}{SE}
+  - \DeclareMathOperator{\Cov}{Cov}
+  - \DeclareMathOperator{\Corr}{Corr}
+  - \DeclareMathOperator{\dd}{d}
+  ## model notation 
+  - \DeclareMathOperator{\iid}{\overset{\textit{\footnotesize iid}}{\sim}}
+  - \DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
+  ## link functions
+  - \DeclareMathOperator{\logit}{logit}
+  - \DeclareMathOperator{\probit}{probit}
+  ## linear algebra
+  - \DeclareMathOperator{\tp}{\mkern-1.5mu T}
+  - \DeclareMathOperator{\trace}{Tr}
+  ## distributions
+  - \DeclareMathOperator{\N}{N}
+  - \DeclareMathOperator{\Poisson}{Poisson}
+  - \DeclareMathOperator{\Bernoulli}{Bernoulli}
+  - \DeclareMathOperator{\Binomial}{Binomial}
+  - \DeclareMathOperator{\NegBin}{NegBin}
+  - \DeclareMathOperator{\dBeta}{Beta}
+  - \DeclareMathOperator{\BetaBin}{Beta-Binomial}
+  - \DeclareMathOperator{\dGamma}{Gamma}
+  - \DeclareMathOperator{\Exp}{Exp}
+---
+
+```{r setup, include=FALSE}
+# packages
+library(tidyverse)
+library(kableExtra)
+library(GGally)
+library(GLMsData)
+
+# set defaults
+knitr::opts_chunk$set(comment = " ")
+ggplot2::theme_set(theme_classic)
+
+# set code chunk defaults
+knitr::opts_chunk$set(tidy = F, # display code as typed
+                      #size = "small", # slightly smaller code font
+                      message = FALSE,
+                      warning = FALSE,
+                      comment = "\t") 
+# set black & white plot theme as default
+ggplot2::theme_set(theme_classic()) 
+
+# improve digit and NA display 
+options(scipen = 1, knitr.kable.NA = '')
+```
+ 
+# R review {-}
+We will live in the [**tidyverse**](https://www.tidyverse.org/packages/) this semester as much as possible. Here are links to relevant packages that will likely get the most use (**dplyr**, **tidyr**, **forcats**, and **ggplot2** are all loaded with **tidyverse**): 
+
+* [**dplyr**](https://github.com/rstudio/cheatsheets/blob/main/data-transformation.pdf): for data manipulation and summary
+
+* [**tidyr**](https://raw.githubusercontent.com/rstudio/cheatsheets/main/tidyr.pdf): for data manipulation 
+
+* [**forcats**](https://raw.githubusercontent.com/rstudio/cheatsheets/main/factors.pdf): for working with factors
+
+* [**ggplot2**](https://github.com/rstudio/cheatsheets/blob/main/data-visualization-2.1.pdf): for graphics
+
+* [**mosaic**](https://github.com/mlaviolet/Mosaic-cheatsheets/blob/master/mosaic-cheatsheet-gf.pdf): wraps around many **tidyverse** functions to simplify syntax for plots and data summaries (`favstats()` is a keeper, but I would otherwise encourage you to learn **ggplot2** and **dplyr** for graphs and summaries, respectively) 
+
+* [**kableExtra**](https://bookdown.org/yihui/rmarkdown-cookbook/kableextra.html): for cleaning up and customizing tables
+
+  * and/or [**flextable**](https://ardata-fr.github.io/flextable-book/)
+  * and/or [**gt**](https://gt.rstudio.com/articles/intro-creating-gt-tables.html) with [**gtsummary**](https://www.danieldsjoberg.com/gtsummary/index.html) 
+
+* [**broom**](https://cran.r-project.org/web/packages/broom/vignettes/broom.html): for quick model summaries
+
+> You might also find the `skimr()` function of the **skimr** package useful. It is one of my favorite "quick look at the data" functions, but the document won't knit unless you use certain settings. For now, use it in the console or in a code chunk with option `eval = FALSE`. 
+
+
+<!----------------------------------------------------------------------------->
+# <!-- 1 -->**Dunn & Smyth 5.25, 6.10, and 7.5** 
+> Nambe Mills, Santa Fe, New Mexico [2, 7], is a tableware manufacturer. After casting, items produced by Nambe Mills are shaped, ground, buffed, and polished. In 1989, as an aid to rationalizing production of its 100 products, the company recorded the total grinding and polishing times and the diameter of each item (data set: `nambeware`). In this problem, only consider the item price ($y$) and the item diameter ($x$). 
+
+> \footnotesize [2] Data Desk: Data and story library (dasl) (2017). URL http://dasl.datadesk.com; [7] Smyth, G.K.: Australasian data and story library (Ozdasl) (2011). URL http://www.statsci.org/data
+
+## <!-- .1 -->Read in the data and plot the price against diameter. Use the plot and what you know of the data to argue that a Gamma GLM is appropriate.
+
+```{r}
+data(nambeware)
+
+#ggplot(nambeware, aes(x = Diam, y = Price)) + geom_point() + geom_smooth()
+GGally::ggpairs(nambeware)
+psych::describe(nambeware)
+```
+
+
+## <!-- .2 -->Write the form of the GLM and then fit the simple model, saving it to an object called `price_glm`.
+
+```{r}
+price_glm <- glm(Price ~ Diam, family = Gamma(link ="inverse"), data = nambeware)
+summary(price_glm)
+```
+
+## <!-- .3 -->Compute the residual deviance for this model.
+
+```{r}
+glance(price_glm)$deviance
+```
+
+## <!-- .4 -->Compute the mean deviance estimate of $\phi$ for this model. *Note:* you can grab the residual degrees of freedom using `df.residual()`.
+
+```{r}
+glance(price_glm)$deviance/df.residual(price_glm)
+```
+
+
+
+## <!-- .5 -->Compute the Pearson estimate of $\phi$ for this model first manually from its components (working weights and residuals) and then using the model summary (since the Pearson estimate is the default in R).
+```{r}
+# Pearson estimate of phi from components
+## working weights
+W <- weights(price_glm, type = "working")
+
+## working residuals
+E <- residuals(price_glm, type = "working")
+
+## Pearson estimate of phi
+
+sum(W*E^2)/(nrow(nambeware)-1)
+
+# Pearson estimate of phi from model summary
+#price_glm$linear.predictors
+```
+
+## <!-- .6 -->Use a Wald test, score test, and likelihood ratio test to determine if diameter is a significant predictor of price for the items. Compare the results and comment.
+
+```{r}
+null_mod <- glm(Price ~ 1, family = Gamma(link ="inverse"), data = nambeware)
+
+anova(price_glm,test = "LRT") # doesn't work cause phi is unknown 
+anova(price_glm,test = "Rao")# doesn't work cause phi is unknown 
+library(aod)
+wald.test(Sigma = vcov(price_glm), b = coef(price_glm), Terms = 1) 
+
+summary(price_glm)
+score <- 1.4e-12 #from model p value
+
+statmod::glm.scoretest(price_glm, c(0,1)) # What is x2?
+
+
+
+```
+
+
+
+## <!-- .7 -->Is the saddlepoint approximation expected to be accurate? What about the Central Limit Theorem? Explain.
+
+CLT yes as N is greater than 30. For a gamma dist $\phi$ for the saddlepoint to hold must be less than 1/3 and we have a phi of 0.205916.
+ 
+## <!-- .8 -->Find the 95% Wald confidence intervals for the regression coefficients.
+
+```{r}
+summary(price_glm)
+
+int <- 0.0214196 
+wald <- 0.0214196
+se <- 0.0000858
+crit<- 1.96
+wald + crit * se
+ wald - crit * se
+```
+ 
+## <!-- .9 -->Use the model to fit 100 new values within the range of the data and their corresponding 95% confidence intervals. Plot the price against diameter, adding the fitted line and the upper and lower confidence bounds. Comment on the fit.
+
+
+## <!-- .10 -->Load the **scales** package, then recreate the same plot but add a layer to transform the $y$ axis to reflect the inverse link (use `coord_trans(y = boxcox_trans(-1))` to do this). Reassess the fit.
+
+```{r}
+g + scales::coord_trans(y = boxcox_trans(-1))
+```
+

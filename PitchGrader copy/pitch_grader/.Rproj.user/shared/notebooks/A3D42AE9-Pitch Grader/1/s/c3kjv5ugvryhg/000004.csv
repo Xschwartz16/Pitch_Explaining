@@ -1,0 +1,2 @@
+"0","ggplot(data = next_pitch_woba %>% select(wOBA, strikes) %>% drop_na(), aes(x = strikes, y = wOBA)) +"
+"0","  geom_jitter()"

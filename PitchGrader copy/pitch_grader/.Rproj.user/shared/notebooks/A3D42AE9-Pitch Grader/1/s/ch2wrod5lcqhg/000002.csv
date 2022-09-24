@@ -1,0 +1,4 @@
+"0","# predicted_wOBAs <- left_join(inner_join(some_pitches,aggregate)%>% group_by(pitcher, pitch_type) %>% summarise(actual_wOBA = mean(wOBA), predicted_wOBA = mean(final_pred), pitch_count = n()),names, by = c(""pitcher""=""key_mlbam""))%>%mutate(differential = actual_wOBA-predicted_wOBA)%>%filter(pitch_count >= 100)"
+"0",""
+"0","# save(predicted_wOBAs, file = ""predWoba.rda"")"
+"0","load(""predWoba.rda"")"

@@ -1,0 +1,2 @@
+"0",""
+"0","f1 <- rattle::fancyRpartPlot(fastball$fit, main = ""What Makes a Fastball Good (wOBA)"")"

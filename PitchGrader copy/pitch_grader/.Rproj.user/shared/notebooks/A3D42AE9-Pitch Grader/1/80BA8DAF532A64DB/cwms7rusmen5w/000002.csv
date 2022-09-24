@@ -1,0 +1,5 @@
+"0","load(file = ""allpitches15to21.rda"")"
+"0",""
+"0","some_pitches <- sample(all_pitches,50000)"
+"0",""
+"0","rm(all_pitches)"

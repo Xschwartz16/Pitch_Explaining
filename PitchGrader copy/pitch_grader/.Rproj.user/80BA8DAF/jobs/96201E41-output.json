@@ -1,0 +1,6 @@
+[1,"Installing 'statmod' ...\n"]
+[2,"trying URL 'https://cran.rstudio.com/bin/macosx/contrib/4.1/statmod_1.4.36.tgz'\n"]
+[2,"Content type 'application/x-gzip' length 272931 bytes (266 KB)\n==================================================\ndownloaded 266 KB\n\n"]
+[1,"The downloaded binary packages are in\n"]
+[1,"\t/var/folders/64/xtgnsjws6kx2kgf3xf017kf40000gs/T//Rtmp4m2ytO/downloaded_packages\n"]
+[2,"\n\n✔ Package 'statmod' successfully installed.\n"]

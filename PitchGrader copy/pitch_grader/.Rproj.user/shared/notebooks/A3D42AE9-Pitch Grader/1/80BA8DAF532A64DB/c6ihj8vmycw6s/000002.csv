@@ -1,0 +1,256 @@
+"0","# Do not delete this chunk"
+"0","library(mosaic)"
+"2","Registered S3 method overwritten by 'htmlwidgets':
+  method           from         
+  print.htmlwidget tools:rstudio
+"
+"2","Registered S3 method overwritten by 'mosaic':
+  method                           from   
+  fortify.SpatialPolygonsDataFrame ggplot2
+"
+"2","
+The 'mosaic' package masks several functions from core packages in order to add 
+additional features.  The original behavior of these functions should not be affected by this.
+"
+"2","
+Attaching package: ‘mosaic’
+
+"
+"2","The following objects are masked from ‘package:dplyr’:
+
+    count, do, tally
+
+"
+"2","The following object is masked from ‘package:Matrix’:
+
+    mean
+
+"
+"2","The following object is masked from ‘package:ggplot2’:
+
+    stat
+
+"
+"2","The following objects are masked from ‘package:stats’:
+
+    binom.test, cor, cor.test, cov, fivenum, IQR, median, prop.test, quantile, sd,
+    t.test, var
+
+"
+"2","The following objects are masked from ‘package:base’:
+
+    max, mean, min, prod, range, sample, sum
+
+"
+"0","library(readr)"
+"0","library(tidyr)"
+"2","
+Attaching package: ‘tidyr’
+
+"
+"2","The following objects are masked from ‘package:Matrix’:
+
+    expand, pack, unpack
+
+"
+"0","library(psych)"
+"2","
+Attaching package: ‘psych’
+
+"
+"2","The following objects are masked from ‘package:mosaic’:
+
+    logit, rescale
+
+"
+"2","The following objects are masked from ‘package:ggplot2’:
+
+    %+%, alpha
+
+"
+"0","library(ggplot2)"
+"0","library(factoextra)"
+"2","Welcome! Want to learn more? See two factoextra-related books at https://goo.gl/ve3WBa
+"
+"0","library(cluster)"
+"0","library(rpart)"
+"0","library(DescTools)"
+"2","
+Attaching package: ‘DescTools’
+
+"
+"2","The following objects are masked from ‘package:psych’:
+
+    AUC, ICC, SD
+
+"
+"2","The following object is masked from ‘package:mosaic’:
+
+    MAD
+
+"
+"0","library(GGally)"
+"0","#devtools::install_github(repo = ""BillPetti/baseballr"")"
+"0","library(baseballr)"
+"2","Registered S3 method overwritten by 'quantmod':
+  method            from
+  as.zoo.data.frame zoo 
+"
+"0","library(ClusterR)"
+"2","Loading required package: gtools
+"
+"2","
+Attaching package: ‘gtools’
+
+"
+"2","The following object is masked from ‘package:psych’:
+
+    logit
+
+"
+"2","The following object is masked from ‘package:mosaic’:
+
+    logit
+
+"
+"0","library(rpart.plot)"
+"0","library(rattle)"
+"2","Loading required package: tibble
+"
+"2","Loading required package: bitops
+"
+"2","
+Attaching package: ‘bitops’
+
+"
+"2","The following object is masked from ‘package:DescTools’:
+
+    %^%
+
+"
+"2","The following object is masked from ‘package:Matrix’:
+
+    %&%
+
+"
+"2","Rattle: A free graphical interface for data science with R.
+Version 5.4.0 Copyright (c) 2006-2020 Togaware Pty Ltd.
+Type 'rattle()' to shake, rattle, and roll your data.
+"
+"0","library(parsnip)"
+"0","library(rsample)"
+"2","
+Attaching package: ‘rsample’
+
+"
+"2","The following object is masked from ‘package:gtools’:
+
+    permutations
+
+"
+"0","library(mclust)"
+"2","    __  ___________    __  _____________
+   /  |/  / ____/ /   / / / / ___/_  __/
+  / /|_/ / /   / /   / / / /\__ \ / /   
+ / /  / / /___/ /___/ /_/ /___/ // /    
+/_/  /_/\____/_____/\____//____//_/    version 5.4.8
+Type 'citation(""mclust"")' for citing this R package in publications.
+"
+"2","
+Attaching package: ‘mclust’
+
+"
+"2","The following object is masked from ‘package:DescTools’:
+
+    BrierScore
+
+"
+"2","The following object is masked from ‘package:psych’:
+
+    sim
+
+"
+"0","library(latticeExtra)"
+"2","
+Attaching package: ‘latticeExtra’
+
+"
+"2","The following object is masked from ‘package:ggplot2’:
+
+    layer
+
+"
+"0","library(vioplot)"
+"2","Loading required package: sm
+"
+"2","Package 'sm', version 2.2-5.7: type help(sm) for summary information
+"
+"2","
+Attaching package: ‘sm’
+
+"
+"2","The following object is masked from ‘package:rattle’:
+
+    binning
+
+"
+"2","Loading required package: zoo
+"
+"2","
+Attaching package: ‘zoo’
+
+"
+"2","The following objects are masked from ‘package:base’:
+
+    as.Date, as.Date.numeric
+
+"
+"0","library(keras)"
+"0","library(ResourceSelection)"
+"2","ResourceSelection 0.3-5 	 2019-07-22
+"
+"0","library(pscl)"
+"2","Classes and Methods for R developed in the
+Political Science Computational Laboratory
+Department of Political Science
+Stanford University
+Simon Jackman
+hurdle and zeroinfl functions by Achim Zeileis
+"
+"0","library(kableExtra)"
+"2","
+Attaching package: ‘kableExtra’
+
+"
+"2","The following object is masked from ‘package:dplyr’:
+
+    group_rows
+
+"
+"0","library(neuralnet)"
+"2","
+Attaching package: ‘neuralnet’
+
+"
+"2","The following object is masked from ‘package:dplyr’:
+
+    compute
+
+"
+"0","# Setting Rounding"
+"0","options(digits = 6)"
+"0","# Formatting"
+"0","knitr::opts_chunk$set("
+"0","  echo = FALSE, warning = FALSE, message = FALSE, results = ""hide"", fig.width = 6,"
+"0","  fig.height = 4, comment = NA, fig.show = ""hide"", dpi = 300"
+"0",")"
+"0","# For any tables"
+"0","kable <- function(x, booktabs = TRUE, align = ""c"", format, digits = getOption(""digits""), row.names = NA, col.names = NA, caption = NULL, label = NULL, format.args = list(), escape = TRUE, full_width = NULL, bootstrap_options = ""basic"", position = ""center"", latex_options = c(""HOLD_position"", ""repeat_headers""), font_size = NULL, row_label_position = ""l"", ...) {"
+"0","  knitr::kable(x, booktabs = booktabs, align = align, format = format, digits = digits, row.names = row.names, col.names = col.names, caption = caption, label = label, format.args = format.args, escape = escape, ...) %>%"
+"0","    kableExtra::kable_styling(full_width = full_width, bootstrap_options = bootstrap_options, position = position, latex_options = latex_options, font_size = font_size, row_label_position = row_label_position, ...)"
+"0","  "
+"0","}"
+"0",""
+"0","set.seed(101)"
+"0",""
+"0",""

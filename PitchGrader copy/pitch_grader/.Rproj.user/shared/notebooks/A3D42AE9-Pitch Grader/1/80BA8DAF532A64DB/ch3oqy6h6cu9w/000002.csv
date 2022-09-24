@@ -1,0 +1,307 @@
+"0","summary(cub)
+"
+"1","
+Call:
+"
+"1",""
+"1","cubist.default(x = (pitch_attributes %>% select(-delta_run_exp)), y
+ = pitch_attributes$delta_run_exp, committees = 5)"
+"1",""
+"1","
+
+"
+"1","
+Cubist [Release 2.07 GPL Edition]  Sun Mar 13 14:36:47 2022
+---------------------------------
+
+    Target attribute `outcome'
+
+Read 40866 cases (17 attributes) from undefined.data
+
+Model 1:
+
+  Rule 1/1: [23432 cases, mean -0.0194, range -1.171 to 2.84, est err 0.1390]
+
+    if
+	plate_z > 1.28
+	plate_z <= 3.45
+	plate_x > -1.04
+	plate_x <= 0.92
+    then
+	outcome = -0.104 + 0.0107 vy0 + 0.0147 release_speed + 0.0028 vz0
+	          + 0.0013 effective_speed - 0.006 plate_z + 0.04 sz_bot
+	          - 0.02 sz_top + 0.008 release_pos_z + 0.005 pfx_z
+
+  Rule 1/2: [3038 cases, mean 0.0129, range -1.117 to 1.727, est err 0.0741]
+
+    if
+	plate_z > 3.45
+	plate_x > -1.04
+	plate_x <= 0.92
+    then
+	outcome = -0.0886 + 0.0143 vy0 + 0.0186 release_speed + 0.03 plate_z
+	          - 0.11 sz_top + 0.17 sz_bot + 0.0027 effective_speed
+	          + 0.0028 vz0 - 0.008 plate_x + 0.008 release_pos_z
+	          + 0.005 pfx_z + 0.0006 vx0
+
+  Rule 1/3: [4438 cases, mean 0.0160, range -0.989 to 1.655, est err 0.0717]
+
+    if
+	plate_z <= 1.28
+	plate_x <= 0.92
+    then
+	outcome = 0.675 + 0.0356 vy0 + 0.0503 release_speed - 0.028 vz0
+	          - 0.069 release_pos_z + 0.035 plate_z + 0.0052 vx0
+	          - 0.036 pfx_z - 0.0043 effective_speed + 0.2 sz_bot
+	          + 0.012 release_pos_x - 0.02 plate_x - 0.08 sz_top
+	          + 0.016 pfx_x
+
+  Rule 1/4: [6166 cases, mean 0.0273, range -0.748 to 1.913, est err 0.0663]
+
+    if
+	plate_x > 0.92
+    then
+	outcome = -0.1378 + 0.0383 vy0 + 0.0537 release_speed + 0.0085 vz0
+	          + 0.0033 effective_speed - 0.021 plate_z + 0.14 sz_bot
+	          - 0.07 sz_top + 0.016 pfx_z + 0.023 release_pos_z
+
+  Rule 1/5: [4326 cases, mean 0.0376, range -0.83 to 1.674, est err 0.0690]
+
+    if
+	plate_x <= -1.04
+    then
+	outcome = -0.0591 + 0.0219 vy0 + 0.0307 release_speed + 0.0049 vz0
+	          + 0.0019 effective_speed - 0.012 plate_z + 0.08 sz_bot
+	          - 0.04 sz_top + 0.009 pfx_z + 0.013 release_pos_z
+
+Model 2:
+
+  Rule 2/1: [23432 cases, mean -0.0194, range -1.171 to 2.84, est err 0.1390]
+
+    if
+	plate_z > 1.28
+	plate_z <= 3.45
+	plate_x > -1.04
+	plate_x <= 0.92
+    then
+	outcome = -0.0219 + 0.006 vy0 + 0.0085 release_speed + 0.02 sz_bot
+	          - 0.01 sz_top
+
+  Rule 2/2: [6033 cases, mean 0.0206, range -0.989 to 1.655, est err 0.0668]
+
+    if
+	plate_z <= 1.28
+    then
+	outcome = 0.0754 + 0.0574 vy0 + 0.0805 release_speed + 0.22 sz_bot
+	          - 0.11 sz_top + 0.0026 effective_speed
+
+  Rule 2/3: [3657 cases, mean 0.0236, range -1.117 to 1.727, est err 0.0743]
+
+    if
+	plate_z > 3.45
+	plate_x <= 0.92
+    then
+	outcome = 0.1365 + 0.046 vy0 + 0.056 release_speed
+	          + 0.0107 effective_speed - 0.032 plate_x + 0.15 sz_bot
+	          - 0.08 sz_top + 0.0027 vx0 + 0.012 plate_z + 0.011 pfx_x
+	          + 0.005 release_pos_x - 0.018 release_extension
+
+  Rule 2/4: [6166 cases, mean 0.0273, range -0.748 to 1.913, est err 0.0667]
+
+    if
+	plate_x > 0.92
+    then
+	outcome = 0.0732 + 0.0426 vy0 + 0.0597 release_speed + 0.16 sz_bot
+	          - 0.08 sz_top + 0.0019 effective_speed
+
+  Rule 2/5: [4326 cases, mean 0.0376, range -0.83 to 1.674, est err 0.0692]
+
+    if
+	plate_x <= -1.04
+    then
+	outcome = 0.081 + 0.0245 vy0 + 0.0343 release_speed + 0.09 sz_bot
+	          - 0.05 sz_top + 0.0011 effective_speed
+
+Model 3:
+
+  Rule 3/1: [23432 cases, mean -0.0194, range -1.171 to 2.84, est err 0.1390]
+
+    if
+	plate_z > 1.28
+	plate_z <= 3.45
+	plate_x > -1.04
+	plate_x <= 0.92
+    then
+	outcome = -0.0502 + 0.0101 vy0 + 0.0139 release_speed
+	          + 0.0009 effective_speed + 0.04 sz_bot - 0.02 sz_top
+
+  Rule 3/2: [6033 cases, mean 0.0206, range -0.989 to 1.655, est err 0.0671]
+
+    if
+	plate_z <= 1.28
+    then
+	outcome = -0.0331 + 0.0597 vy0 + 0.0834 release_speed + 0.23 sz_bot
+	          + 0.004 effective_speed - 0.12 sz_top + 0.0038 vz0
+	          - 0.011 plate_z + 0.013 release_pos_z + 0.006 pfx_z
+
+  Rule 3/3: [3657 cases, mean 0.0236, range -1.117 to 1.727, est err 0.0738]
+
+    if
+	plate_z > 3.45
+	plate_x <= 0.92
+    then
+	outcome = -0.0557 + 0.0458 vy0 + 0.0578 release_speed
+	          + 0.0098 effective_speed - 0.026 plate_x + 0.16 sz_bot
+	          - 0.08 sz_top + 0.005 vz0 + 0.0022 vx0 + 0.009 pfx_x
+	          + 0.004 release_pos_x + 0.015 release_pos_z
+	          - 0.014 release_extension + 0.008 pfx_z
+
+  Rule 3/4: [6166 cases, mean 0.0273, range -0.748 to 1.913, est err 0.0662]
+
+    if
+	plate_x > 0.92
+    then
+	outcome = -0.0211 + 0.0359 vy0 + 0.0502 release_speed + 0.14 sz_bot
+	          + 0.0024 effective_speed - 0.07 sz_top + 0.0023 vz0
+	          - 0.006 plate_z + 0.008 release_pos_z + 0.004 pfx_z
+
+  Rule 3/5: [4326 cases, mean 0.0376, range -0.83 to 1.674, est err 0.0691]
+
+    if
+	plate_x <= -1.04
+    then
+	outcome = 0.046 + 0.0195 vy0 + 0.0273 release_speed + 0.07 sz_bot
+	          - 0.04 sz_top + 0.0013 effective_speed + 0.0013 vz0
+	          - 0.003 plate_z
+
+Model 4:
+
+  Rule 4/1: [23432 cases, mean -0.0194, range -1.171 to 2.84, est err 0.1391]
+
+    if
+	plate_z > 1.28
+	plate_z <= 3.45
+	plate_x > -1.04
+	plate_x <= 0.92
+    then
+	outcome = -0.0456 + 0.0056 vy0 + 0.0078 release_speed + 0.02 sz_bot
+
+  Rule 4/2: [6033 cases, mean 0.0206, range -0.989 to 1.655, est err 0.0668]
+
+    if
+	plate_z <= 1.28
+    then
+	outcome = 0.0836 + 0.0598 vy0 + 0.0839 release_speed + 0.22 sz_bot
+	          - 0.11 sz_top + 0.0026 effective_speed
+
+  Rule 4/3: [3657 cases, mean 0.0236, range -1.117 to 1.727, est err 0.0740]
+
+    if
+	plate_z > 3.45
+	plate_x <= 0.92
+    then
+	outcome = 0.0073 + 0.0458 vy0 + 0.0568 release_speed
+	          + 0.0105 effective_speed - 0.03 plate_x + 0.15 sz_bot
+	          - 0.08 sz_top + 0.0024 vx0 + 0.0046 vz0 + 0.005 release_pos_x
+	          + 0.01 pfx_x - 0.016 release_extension + 0.014 release_pos_z
+	          + 0.007 pfx_z
+
+  Rule 4/4: [6166 cases, mean 0.0273, range -0.748 to 1.913, est err 0.0667]
+
+    if
+	plate_x > 0.92
+    then
+	outcome = 0.0723 + 0.0428 vy0 + 0.06 release_speed + 0.16 sz_bot
+	          - 0.08 sz_top + 0.0019 effective_speed
+
+  Rule 4/5: [4326 cases, mean 0.0376, range -0.83 to 1.674, est err 0.0693]
+
+    if
+	plate_x <= -1.04
+    then
+	outcome = 0.0728 + 0.026 vy0 + 0.0364 release_speed + 0.1 sz_bot
+	          - 0.05 sz_top + 0.0011 effective_speed
+
+Model 5:
+
+  Rule 5/1: [23432 cases, mean -0.0194, range -1.171 to 2.84, est err 0.1390]
+
+    if
+	plate_z > 1.28
+	plate_z <= 3.45
+	plate_x > -1.04
+	plate_x <= 0.92
+    then
+	outcome = -0.0526 + 0.0107 vy0 + 0.0146 release_speed
+	          + 0.0011 effective_speed + 0.04 sz_bot - 0.02 sz_top
+
+  Rule 5/2: [6033 cases, mean 0.0206, range -0.989 to 1.655, est err 0.0671]
+
+    if
+	plate_z <= 1.28
+    then
+	outcome = -0.0306 + 0.0588 vy0 + 0.0822 release_speed + 0.23 sz_bot
+	          - 0.12 sz_top + 0.0039 effective_speed + 0.0036 vz0
+	          - 0.01 plate_z + 0.012 release_pos_z + 0.006 pfx_z
+
+  Rule 5/3: [3657 cases, mean 0.0236, range -1.117 to 1.727, est err 0.0738]
+
+    if
+	plate_z > 3.45
+	plate_x <= 0.92
+    then
+	outcome = -0.027 + 0.0466 vy0 + 0.0586 release_speed
+	          + 0.0103 effective_speed - 0.028 plate_x + 0.16 sz_bot
+	          - 0.09 sz_top + 0.0051 vz0 + 0.0024 vx0 + 0.005 release_pos_x
+	          + 0.01 pfx_x - 0.015 release_extension + 0.015 release_pos_z
+	          + 0.008 pfx_z
+
+  Rule 5/4: [6166 cases, mean 0.0273, range -0.748 to 1.913, est err 0.0662]
+
+    if
+	plate_x > 0.92
+    then
+	outcome = -0.0283 + 0.0366 vy0 + 0.0512 release_speed + 0.14 sz_bot
+	          + 0.0025 effective_speed - 0.07 sz_top + 0.0023 vz0
+	          - 0.006 plate_z + 0.008 release_pos_z + 0.004 pfx_z
+
+  Rule 5/5: [4326 cases, mean 0.0376, range -0.83 to 1.674, est err 0.0690]
+
+    if
+	plate_x <= -1.04
+    then
+	outcome = 0.0395 + 0.0176 vy0 + 0.0247 release_speed + 0.07 sz_bot
+	          - 0.04 sz_top + 0.0012 effective_speed + 0.0011 vz0
+	          - 0.003 plate_z
+
+
+Evaluation on training data (40866 cases, sampled):
+
+    Average  |error|             0.1784
+    Relative |error|               1.47
+    Correlation coefficient        0.03
+
+
+	Attribute usage:
+	  Conds  Model
+
+	   89%    10%    plate_x
+	   76%    36%    plate_z
+	         100%    release_speed
+	         100%    vy0
+	         100%    sz_bot
+	          89%    sz_top
+	          78%    effective_speed
+	          40%    vz0
+	          36%    release_pos_z
+	          36%    pfx_z
+	          10%    vx0
+	           9%    release_pos_x
+	           9%    pfx_x
+	           7%    release_extension
+
+
+Time: 18.4 secs
+"
+"1","
+"

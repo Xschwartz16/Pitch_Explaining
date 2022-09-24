@@ -1,0 +1,27 @@
+{
+    "id": "AE3C7DC5",
+    "path": "~/Documents/GitHub/labs/lab03_maximum-likelihood/lab03_maximum-likelihood.Rmd",
+    "project_path": null,
+    "type": "r_markdown",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1648038793203.0,
+    "source_on_save": false,
+    "relative_order": 10,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "163,0",
+        "scrollLine": "0",
+        "last_setup_crc32": ""
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1647887300,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1647887300,
+    "read_only": false,
+    "read_only_alternatives": []
+}

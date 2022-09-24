@@ -1,0 +1,209 @@
+---
+title: "STAT 456: Data Analysis Challenge 1"
+subtitle: "Due Monday, February 21"
+author: "Xander Schwartz"
+date: "\\today"
+output: 
+  pdf_document:
+    fig_width: 3.6
+    fig_height: 2.4
+    highlight: kate
+    number_sections: true
+classoption: fleqn
+geometry: margin=1in
+linestretch: 1.25
+fontfamily: cmbright
+colorlinks: true
+citecolor: blue
+urlcolor: blue
+header-includes: 
+  # header/footer formats
+  - \usepackage{fancyhdr}\pagestyle{fancy}\fancyhf{}\cfoot{\thepage}
+  - \lhead{\footnotesize STAT 456 \copyright Brittney E. Bailey}
+  # formats for headings
+  - \usepackage[compact]{titlesec}
+  - \titleformat{\section}[hang]{\setstretch{1}\ifnum\value{section}>0 \newpage \fi \Large }{\bfseries\thesection}{5mm}{}[]
+  - \titleformat{\subsection}[hang]{\vspace{11pt}\setstretch{1}\large}{\large\bfseries\thesubsection}{5mm}{}[]
+  - \titleformat{\subsubsection}[hang]{\bfseries}{}{0mm}{}[]
+  # additional text formatting
+  - \AtBeginDocument{\raggedright}
+  - \AtBeginEnvironment{Shaded}{\setstretch{1}}
+  - \definecolor{shadecolor}{RGB}{248,248,255}
+  # math packages
+  - \usepackage{amsthm, mathtools, dsfont, bm, mleftright, cancel}
+  # LaTeX shortcuts for math typesetting
+  ## statistical functions
+  - \DeclareMathOperator{\E}{E}
+  - \DeclareMathOperator{\Var}{Var}
+  - \DeclareMathOperator{\V}{V}
+  - \DeclareMathOperator{\se}{SE}
+  - \DeclareMathOperator{\Cov}{Cov}
+  - \DeclareMathOperator{\Corr}{Corr}
+  - \DeclareMathOperator{\dd}{d}
+  ## model notation 
+  - \DeclareMathOperator{\iid}{\overset{\textit{\footnotesize iid}}{\sim}}
+  - \DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
+  ## link functions
+  - \DeclareMathOperator{\logit}{logit}
+  - \DeclareMathOperator{\probit}{probit}
+  ## linear algebra
+  - \DeclareMathOperator{\tp}{\mkern-1.5mu T}
+  - \DeclareMathOperator{\trace}{Tr}
+  ## distributions
+  - \DeclareMathOperator{\N}{N}
+  - \DeclareMathOperator{\Poisson}{Poisson}
+  - \DeclareMathOperator{\Bernoulli}{Bernoulli}
+  - \DeclareMathOperator{\Binomial}{Binomial}
+  - \DeclareMathOperator{\NegBin}{NegBin}
+  - \DeclareMathOperator{\dBeta}{Beta}
+  - \DeclareMathOperator{\BetaBin}{Beta-Binomial}
+  - \DeclareMathOperator{\dGamma}{Gamma}
+  - \DeclareMathOperator{\Exp}{Exp}
+---
+
+```{r setup, include=FALSE}
+# packages
+library(tidyverse)
+library(kableExtra)
+library(ggfortify)
+
+# set defaults
+knitr::opts_chunk$set(comment = " ", echo = F, message = F, warning = F)
+ggplot2::theme_set(theme_classic)
+
+# set code chunk defaults
+knitr::opts_chunk$set(tidy = F, # display code as typed
+                      #size = "small", # slightly smaller code font
+                      message = FALSE,
+                      warning = FALSE,
+                      comment = "\t") 
+# set black & white plot theme as default
+ggplot2::theme_set(theme_classic()) 
+
+# improve digit and NA display 
+options(scipen = 1, knitr.kable.NA = '')
+
+# R Markdown options
+knitr::opts_chunk$set(
+  tidy = T,
+  size = "small", # slightly smaller font for code
+  tidy.opts = list(width.cutoff = 60),
+  fig.width = 6,
+  fig.height = 4,
+  fig.align = "center",
+  message = F,
+  warning = F
+)
+# Makes kable table nice just by adding `%>% kable()` to a table
+# Use `escape = FALSE` to use LaTeX inside of a table
+kable <- function(x, booktabs = TRUE, align = "c", format, digits = getOption("digits"), row.names = NA, col.names = NA, caption = NULL, label = NULL, format.args = list(), escape = TRUE, full_width = NULL, bootstrap_options = "basic", position = "center", latex_options = c("HOLD_position", "repeat_headers"), font_size = NULL, row_label_position = "l", ...) {
+  knitr::kable(x, booktabs = booktabs, align = align, format = format, digits = digits, row.names = row.names, col.names = col.names, caption = caption, label = label, format.args = format.args, escape = escape, ...) %>%
+    kableExtra::kable_styling(full_width = full_width, bootstrap_options = bootstrap_options, position = position, latex_options = latex_options, font_size = font_size, row_label_position = row_label_position, ...)
+}
+set.seed(1)
+
+```
+
+Building off of Lab 1, build your own final model for the Harris Trust study. Based on your final model, do you find evidence of gender discrimination at Harris Trust?
+
+Write a brief report as if sharing evidence with a lay audience (e.g., presenting evidence in the lawsuit). Your report should include a summary of your understanding of the question or the goal of the analysis, a summary of the data itself and your approach to analysis, a summary table (a classic "Table 1") describing the sample (explanatory or demographic variables only), the results of your analysis, and your conclusions. 
+
+Use headings and subheadings as appropriate to break up your report. Do not "echo" your code. 
+
+> **Note**: In practice, both qualitative and quantitative variables would be displayed in Table 1 of a journal article (see [this](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8812897/table/pone.0263069.t001/?report=objectonly) or [this](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8792891/table/T1/?report=objectonly) from recent trending open-source articles on PubMed). 
+
+Create a brief presentation (up to 5 minutes) to accompany your report. 
+
+Be prepared to discuss and justify the selection of your final model with your peers. You might consider interactions with gender, since those terms could show that discrimination is stronger among certain workers. 
+
+# Understanding Our Data
+
+```{r}
+bankdata <- read_csv("banksalary.csv")
+```
+
+
+```{r}
+#glimpse(bankdata)
+
+#testing if missing data
+#nrow(bankdata %>% drop_na)
+#still 93 rows seems good
+psych::describe(bankdata,  skew = F) %>%
+  kable(caption = "Table 1", full_width = T)
+```
+In the 1970s, Harris Trust was sued for gender discrimination in the salaries it paid its employees. In this dataset, there are 93 observations of employees both male and female. In the dataset, there is each employee's age, as well as their starting salary, salary as of 1977, experience, seniority, and education level. To test whether gender discrimination occurred, we will look at each employee's starting salary and attempt to measure the difference between men and women. Below is a plot looking at starting salaries by gender. 
+
+
+```{r}
+ggplot(bankdata, aes(x = bsal, fill = sex)) + geom_density(aes(alpha = .5)) + 
+  guides(alpha = FALSE) + 
+  labs(x = "Starting Salary ($)")
+ 
+
+
+```
+It is clear that men make more money in starting salaries than women, but because there may be underlying variables that could also impact the dataset and create the same result we cannot conclusively determine that sex is the only determining factor. 
+
+For example, one other factor that could be driving this is education levels, although it should be noted that the education world, particulalrly in the 1970s also suffered from gender discrimination. The plot shows that those with higher education also had higher starting salaries
+```{r}
+#Fixing education variable
+
+bankdata <- bankdata %>% mutate(edu_fixed = ifelse(educ <= 10, "8-10",
+                                       ifelse(educ > 14, "15+", "11-14"))) %>% select(-educ)
+
+ggplot(bankdata, aes(y= bsal, fill = edu_fixed)) + geom_boxplot() + labs(y = "Starting Salary ($)")
+```
+
+Starting salaries also might be influenced by seniority, as due to inflation or other issues, the more senior members may have started with lower salaries. Giving the time frame, it is likely there are more senior male workers, which would mean they might have lower starting salaries which could help to hide a larger pay gap issue. 
+
+Below is a look at seniority, as well as other potential variables. 
+
+
+```{r, fig.height=4, fig.width=6}
+GGally::ggpairs(bankdata %>% select(bsal, sex, age, exper, edu_fixed)) +  theme(axis.text.x = element_text(angle = 90, vjust = 1, color = "black"))
+```
+Age and experience are heavily correlated, which is relatively intuitive. This could create issues with multicolinearity that we need to be aware of. Age also appears to be somewhat bimodal.  
+
+# Building A Model
+
+We will now try to build a model using a 70/30 training/testing split. I will use stepwise regression, but start with a model with every variable. 
+
+```{r, fig.height=3, fig.width=3}
+set.seed(101) 
+sample <- sample.int(n = nrow(bankdata), size = floor(.70*nrow(bankdata)), replace = F)
+train <- bankdata[sample, ]
+test  <- bankdata[-sample, ]
+
+```
+
+
+```{r}
+larger_mod <- lm(train,formula =  bsal ~ .)
+summary(larger_mod)
+```
+The model with all variables has an adjusted $R^2$ of 0.47, but also have many variables that are not statistically significant. We will now use bi-directional stepwise regression.
+
+```{r}
+newMod <- MASS::stepAIC(larger_mod, direction = "both")
+summary(newMod)
+```
+This new model is far more effective in that almost every statistic has a low P-Value, outside of one factor of education, while also not sacrificing on the overall $R^2$ as it remains relatively constant. We will now check our model to make sure it meets the assumptions of linear regression. 
+
+```{r}
+autoplot(newMod)
+
+```
+No issues with multicolinearity. There seems to no large issues with equal variance. Even if the correlation is weak, there still seems to be a linear relationship. Finally, the outliers may be problematic, but not terribly. 
+
+Finally, we will also compare the predicted outcomes from the model in our testing set to the actual outcomes. There appears to be relatively strong correlation between the predictions and the actual outcomes, although the sample size is relatively small. 
+
+```{r}
+test <- test %>% mutate(pred = predict(newMod,test))
+#cor(test$pred, test$bsal)
+ggplot(test, aes(x = bsal, y = pred)) + geom_point(aes(col = sex)) + geom_smooth() + labs(y = "Predicted Starting Salary ($)", x = "Actual Starting Salary ($)")
+```
+
+# Conclusions
+
+Having now built the model we can circle back to our original question: is there evidence of gender discrimination? Looking at our final model, having controlled for other variables, it is clear that sex makes a rather large impact on expected starting salary. With a P-Value of 0.00153, men make on average a little of $500 more than women on average in this dataset. 

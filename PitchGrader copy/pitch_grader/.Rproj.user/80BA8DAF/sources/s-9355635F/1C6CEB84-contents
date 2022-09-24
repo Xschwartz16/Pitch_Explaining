@@ -1,0 +1,327 @@
+---
+classoption: dvipsnames, svgnames
+output:
+  pdf_document:
+    number_section: true
+    highlight: pygments
+fontsize: 11pt
+subparagraph: yes
+header-includes:
+  - \usepackage{fancyhdr, titlesec, lastpage, float, bm}
+  - \lhead{Amherst College \\ Xander Schwartz}
+  - \rhead{Milwaukee Brewers \\ aschwartz23@amherst.edu}
+  - \chead{\textbf{\Large  Internship Responses}}
+  - \setcounter{section}{0}
+  - \setlength{\headheight}{26pt}
+  - \titlespacing{\section}{0pt}{12pt}{4pt}
+  - \titlespacing{\subsection}{0pt}{56pt}{4pt}
+  - \titlespacing{\subsubsection}{0pt}{12pt}{4pt}
+  - \floatplacement{figure}{H}
+  - \definecolor{codegray}{HTML}{f9f9f9}
+  - \definecolor{codeletter}{HTML}{002c6b}
+  - \let\textttOrig\texttt
+  - \renewcommand{\texttt}[1]{\textttOrig{\textbf{\textcolor{codeletter}{\colorbox{codegray}{#1}}}}}
+  - \definecolor{indigo}{RGB}{75, 0, 130}
+  - \definecolor{darkgreen}{RGB}{0, 128, 0}
+---
+\thispagestyle{fancy}
+
+```{r setup, include = FALSE}
+# Load necessary packages
+library(mosaic)
+library(kableExtra)
+library(tidyverse)
+
+# R Markdown options
+knitr::opts_chunk$set(
+  tidy = FALSE, # display code as typed
+  size = "small", # slightly smaller font for code
+  fig.width = 4,
+  fig.height = 2.5,
+  fig.align = "center"
+)
+theme_set(theme_bw())
+# Makes kable table nice just by adding `%>% kable()` to a table
+# Use `escape = FALSE` to use LaTeX inside of a table
+kable <- function(x, booktabs = TRUE, align = "c", format, digits = getOption("digits"), row.names = NA, col.names = NA, caption = NULL, label = NULL, format.args = list(), escape = TRUE, full_width = NULL, bootstrap_options = "basic", position = "center", latex_options = c("HOLD_position", "repeat_headers"), font_size = NULL, row_label_position = "l", ...) {
+  knitr::kable(x, booktabs = booktabs, align = align, format = format, digits = digits, row.names = row.names, col.names = col.names, caption = caption, label = label, format.args = format.args, escape = escape, ...) %>%
+    kableExtra::kable_styling(full_width = full_width, bootstrap_options = bootstrap_options, position = position, latex_options = latex_options, font_size = font_size, row_label_position = row_label_position, ...)
+}
+set.seed(1)
+```
+
+<!-- NEW PROBLEM -------------------------------------------------------------------------------->
+# For the next season, Player X is projected to perform with a mean of 2 WAR, normally distributed with a standard deviation of 2 WAR. Player Y is projected to perform with a mean of 1 WAR,normally distributed with a standard deviation of 3 WAR.
+
+## a. What is the probability that Player X outperforms Player Y?
+
+
+```{r}
+playerX_count <- 0
+playerY_count <- 0
+
+for (sims in 1:100000) # running 100000 simulations
+{
+  x <- rnorm(1, 2, 2) # Generating random value from Player X's distribution
+  y <- rnorm(1, 1, 3) # Generating random value from Player Y's distribution
+  if (x > y) {
+    playerX_count <- playerX_count + 1
+  } else {
+    playerY_count <- playerY_count + 1
+  }
+}
+
+playerX_count / sims
+```
+Player X would out perform Player Y about 60.6% of the time. 
+
+## b. When might a team prefer to acquire Player Y over Player X?
+
+```{r, echo=FALSE}
+ggplot(data.frame(x = c(-5, 10)), aes(x)) +
+  stat_function(fun = dnorm, args = list(mean = 2, sd = 2), col = "red") +
+  stat_function(fun = dnorm, args = list(mean = 1, sd = 3), col = "blue") +
+  labs(y = "density", x = "WAR")
+```
+
+
+```{r}
+dnorm(5.5, 2, 2) # Chance that player A gets 5.5 or more WAR
+dnorm(5.5, 1, 3) # Chance that player B gets 5.5 or more WAR
+```
+If for some reason a team wanted to increase their variance substantially, Player Y is more likely than Player X to be worth more than 5.5 wins, although Player Y is also substantially more likely to be worth negative wins than Player X. 
+
+\newpage 
+
+# A runner on first base with 2 out and nobody else on base will attempt to steal second base on the first pitch 70% of the time if he is fully healthy but only 10% of the time if he is playing through an injury. Assume that 80% of the player population is healthy. You see a randomly selected runner not attempt a steal in this situation. What is the probability that the runner is playing through an injury?
+
+$$\frac{prior * priorFalse}{prior * priorFalse + priorTrue * (1-prior)}$$
+
+```{r}
+modifiedBayesTh <- function(prior, priorF, priorT) {
+  return(prior * priorF / (prior * priorF + priorT * (1 - prior)))
+}
+
+overall_injured_rate <- .2
+doesnt_steal_if_injured <- .9
+doesnt_steal_if_not_injured <- .3
+
+modifiedBayesTh(
+  overall_injured_rate,
+  doesnt_steal_if_injured,
+  doesnt_steal_if_not_injured
+)
+```
+The probability the player is playing through an injury is about 42.9% using the formula above. 
+
+\newpage 
+
+# Your General Manager wants to reduce the number of home runs given up by your pitchers on fastballs and asks you for data driven suggestions. You are given a data set of all 2021 MLB fastballs with columns for velocity, pitch location at the plate (X and Y), and pitch outcome. You start by fitting a logistic regression model on all 2021 MLB fastballs hit into play, predicting the probability of a home run. The following coefficients are estimated from your logistic model:
+
+```{r, echo=FALSE}
+
+hrLogTable <- matrix(c(-2.76178, -0.02271, 0.97980, 0.94462, -0.35231),
+  ncol = 1, byrow = TRUE
+)
+colnames(hrLogTable) <- c("Value")
+rownames(hrLogTable) <- c(
+  "Intercept", "Velocity (mph)",
+  "Horizontal Location X (ft)",
+  "Vertical Location Y (ft)",
+  "Location X * Location Y"
+)
+hrLogTable <- as.table(hrLogTable)
+hrLogTable %>% kable()
+```
+
+## a) What is the predicted probability of a home run, under this model, for a batted ball on a pitch at 95 mph, located at (X, Y) = (1, 2.5)?
+
+```{r}
+# recreating log model
+hrLogMod <- function(velo, x, y) {
+  intercept <- -2.76178
+  result <- intercept + -0.02271 * velo +
+    x * 0.97980 + 0.94462 * y + -0.35231 * x * y
+  return(1 / (1 + exp(-result)))
+}
+hrPred <- hrLogMod(95, 1, 2.5)
+hrPred
+```
+The predicted probability of a home run, under this model, for a batted ball on a pitch at 95 mph, located at (X, Y) = (1, 2.5) is 7.88%.
+
+## b) Under this model, pitches thrown higher in the zone (location Y) are more likely to be home runs. Is this effect stronger for pitches thrown with a location X of 0 or 1? How do you know?
+
+```{r}
+hrPredX0 <- hrLogMod(90, 0, 1)
+hrPredX0
+hrPredX1 <- hrLogMod(90, 1, 1)
+hrPredX1
+```
+By plugging this into the given model while holding other conditions equal, pitches that have an X location of 1 are more likely to be home runs than pitches that have an X location of 0. 
+
+## c) Under this model, pitches thrown higher in the zone (location Y) are more likely to be home runs. Is this effect stronger for pitches thrown with a velocity of 90 mph or 95 mph? How do you know?
+
+```{r}
+
+hrPred90 <- hrLogMod(90, 1, 1)
+hrPred90
+hrPred95 <- hrLogMod(95, 1, 1)
+hrPred95
+```
+
+By plugging this into the given model while holding other conditions equal, pitches that are thrown 90mph are more likely to be home runs than pitches thrown 95mph. 
+
+## d) Without collecting any more data, what is one change you could make to your modeling procedure that you think would help you better address your GM’s question?
+
+This model above relies on an interaction term between the X and Y coordinates as well as the non-interaction term of the X and Y coordinates to help map the strike zone. This method can sometimes be messy and a logistic regression model may not be able to interpret those predictors with high levels of accuracy, as a pitch to the upper right and bottom left might fare very differently even if the X Y coordinates' interaction terms are similar. A better method would be to turn the X and Y data into a grid and map the X Y coordinates into categories within the grid, much like many strike zone visualizations. The dimensions of the grid would likely depend on the quantity of the data, as having more precise categories within the grid is beneficial if the sample size is large enough. 
+
+\newpage 
+
+# With 10 games remaining in the season, the Giants have a 2 game lead over the Dodgers in the NL West. Assume that the Dodgers’ odds of winning in each remaining individual game is 65%. Assume the Giants have a probability p of winning in each of their remaining games. For what value of p will the Giants have a 90% chance of winning the division outright (no tiebreaker required)?
+
+```{r}
+set.seed(1)
+p <- .65
+divPercentage <- 0
+while (divPercentage < .9) { # checking until 90% condition is met
+  giantsWinDiv <- 0
+  p <- p + .001 # incrementing p until they win their division 90% of the time
+  for (sims in 1:10000) # running 10000 simulations
+  {
+    # simulating Giants' remaining games
+    giantsWins <- 2 + sum(sample(0:1, 10, replace = TRUE, prob = c(1 - p, p)))
+
+    # simulating Dodgers' remaining games
+    dodgersWins <- sum(sample(0:1, 10, replace = TRUE, prob = c(.35, .65)))
+    if (giantsWins > dodgersWins) {
+      giantsWinDiv <- giantsWinDiv + 1
+    }
+  }
+  divPercentage <- giantsWinDiv / sims
+}
+p
+```
+
+The Giants would need to win about 76% of their games to be likely to win the division outright.
+
+\newpage 
+
+# Two teams are tied at the start of the 7th inning. Assume that in each half-inning teams score runs according to the probability distributions given in the table below. What is the probability that this game will last at least 12 innings?
+
+```{r, echo=FALSE}
+scoreDist <- matrix(c(.55, .25, .15, .05, .2, .4, .25, .15),
+  ncol = 4, byrow = TRUE
+)
+colnames(scoreDist) <- c("0 Runs", "1 Run", "2 Runs", "3 Runs")
+rownames(scoreDist) <- c("1-9", "10+")
+scoreDist <- as.table(scoreDist)
+scoreDist %>% kable()
+```
+
+
+```{r}
+set.seed(1)
+twelveInnCount <- 0
+for (sims in 1:10000)
+{
+  # Simulating both team's runs with given distribution for three innings
+  teamARuns <- sum(sample(0:3, 3,
+    replace = TRUE,
+    prob = c(.55, .25, .15, .05)
+  ))
+  teamBRuns <- sum(sample(0:3, 3,
+    replace = TRUE,
+    prob = c(.55, .25, .15, .05)
+  ))
+  # Checking for extra innings
+  if (teamARuns == teamBRuns) {
+    inning <- 10 # If extra innings, create innings count
+    while (teamARuns == teamBRuns) {
+      if (inning == 12) {
+        # Counting how many games go to 12 innings
+        twelveInnCount <- twelveInnCount + 1
+      }
+      # Using new extra innings distribution, but one inning at a time
+      teamARuns <- teamARuns + sample(0:3, 1,
+        replace = TRUE,
+        prob = c(.2, .4, .25, .15)
+      )
+      teamBRuns <- teamBRuns + sample(0:3, 1,
+        replace = TRUE,
+        prob = c(.2, .4, .25, .15)
+      )
+      inning <- inning + 1
+    }
+    # print(inning-1)
+  }
+}
+twelveInnCount / sims
+```
+About 1.4% of games would go to at least the 12th inning. 
+
+\newpage 
+
+# Given the following information, describe how you would construct a model to predict the end result of a matchup in a plate appearance between a batter and a pitcher: 
+
+Identities of the batter, pitcher, catcher and all other fielders, home plate umpire, game state (date, score, inning, outs, count), weather, crowd size, pitcher pitch mix, overall pitcher and batter performance results split by pitch usage, results of career matchup history between the batter and pitcher, batter running speed.
+
+Note: There is no need to find data and generate an actual model. Please just describe how you would proceed assuming you had the data listed. Please limit your response to 500 words.
+
+
+I've built a similar model before (at a pitch by pitch level) and will explain my chosen methodology. I prefer a multinomial ensemble logistic regression model in which the outcomes are strike, ball, field out, single, double, triple, and home run. For this model, you might want to change the outputs to reflect potential plate appearance level outcomes by removing strikes and balls and including strikeouts and walks (and hit by pitches potentially). If you want to be more exact, you might also want to consider different types of field outs (fly ball, grounder, etc.) or conditional outcomes such as the likelihood of a double play with runners on base. 
+
+To build the ensemble model, you would want to create a series of submodels, which depending on the time and data you have could be exceedingly complex or relatively simple. The simplest version of the model might want to consider just the quality of the hitter and quality of the pitcher, whereas an extremely sophisticated model might argue that given the batter pitcher matchup, the batter is more likely to hit a groundball towards the left side of the infield and thus you would want to more heavily weight shortstop and third base defense for the given plate appearance. 
+
+If I were to port my past findings to this question, I would likely have five submodels. The first model would focus on the batter's talent level and have inputs such as wRC+, sprint speed, xwOBA, K%, BB%, and chase percentage. The next model would focus on the pitcher, and use metrics such as xFIP (we will account for the park later), strikeout rate, walk rate, HR/9, HR/FB, and ground ball rate. I would then measure the interaction between batter and pitcher. To do this, I would add my work from another project focussing on predicting batter-pitcher outcomes by clustering pitchers. In the other project, I cluster pitchers by their pitch repertoire (velocity, spin rate, and frequency of each pitch) and mechanics (release point) and then look at the batter's history against a given pitcher's cluster which allows us to account for the typical small samples in most batter-pitcher matchup histories. I use this as a measure of the interaction of batter and pitcher. The next submodel would focus on the game situation in terms of runners on base, the quality of the fielding on the roster, and the outs. If you wanted to be more specific, the fielding metrics should be weighted by the batter's batted ball profile, so that the fielding level at a given position is more valued if the batter is more likely to hit it there. Finally, you want to account for more static parts of the game, such as the umpire's tendencies, the park factors, the wind, and the temperature of the game. After creating the five submodels, you can then combine them into one ensemble model that will weight each of the five models and produce a final likelihood for each potential outcome. 
+
+
+\newpage 
+
+# The Brewers are considering signing a Free Agent outfielder who has the following projections for the next 4 seasons:
+
+```{r, echo = FALSE}
+warProj <- matrix(c(2022, 2023, 2024, 2025, 3.1, 2.3, 1.5, .6), ncol = 2)
+colnames(warProj) <- c("Season", "WAR Projections")
+rownames(warProj) <- c("", "", "", "")
+warProj <- as.table(warProj)
+warProj %>% kable()
+```
+
+The player has stated that he will agree to any of the following contracts:
+
+```{r, echo = FALSE}
+contracts <- matrix(c(
+  "1 Year, $24M",
+  "2 Years, $20M per year (40M total)",
+  "3 Years, $17M per year (51M total)",
+  "4 Years, $15M per year (60M total)"
+), ncol = 1)
+colnames(contracts) <- c("Contract")
+rownames(contracts) <- c("", "", "", "")
+
+contracts <- as.table(contracts)
+contracts %>% kable()
+```
+
+Which contract would you recommend the Brewers sign the player to? Note: there are no forfeited draft picks required for any of the contracts. Please explain your process and any assumptions you make.
+
+```{r}
+WARs <- c(3.1, 2.3, 1.5, .6)
+oneYearWar <- WARs[1]
+twoYearWar <- sum(WARs[1:2])
+threeYearWar <- sum(WARs[1:3])
+fourYearWar <- sum(WARs[1:4])
+
+oneYearWar * 7.6 - 24
+twoYearWar * 7.6 - 40
+threeYearWar * 7.6 - 51
+fourYearWar * 7.6 - 60
+```
+
+In a recent FanGraphs article (https://blogs.fangraphs.com/the-cost-of-a-win-in-free-agency-in-2020/), it was shown that the cost of a win in free agency has averaged about $7.6M over the past few years. Using that number, all four contracts offer relatively little positive or negative value. If you were to take the best value, the three-year contract provides 1.44 million dollars of value, although that is only a 2.8% ROI. The four-year contract is the worst contract both in pure dollar value and potential long-term risk, although in theory, the player might have longer term upside. Without knowing the age of the player (although he is likely older than 30 given the projected decline), this contract seems to have minimal potential upside. I would lean towards offering the player the one year contract and paying him like a star when he is performing at a high level, rather than paying him like a very good player, when he is performing like a star and then saddling myself with an overpaid player performing close to replacement level while still paying him well. Even if you frontload the contract, you will still be overpaying him relative to the CBT at the end of the contract, so I would tend towards the shortest option.
+
+\newpage 
+
+# If MLB were to implement an automated ball-strike calling system for the 2023 season, how should teams adjust their team building and gameplay strategies to prepare? Please limit your answer to 300 words.
+
+There are many potential impacts of an automated strike zone from a team building perspective. The easiest example is an adjustment towards offense-first catchers, although you would still want to value game-calling, pitch blocking, and the ability to throw out runners. Elite framing catchers such as Max Stassi and Jacob Stallings would be less valuable and better hitting, worse-fielding catchers such as Gary Sanchez and Wilson Contreras would be more acceptable behind the plate. For batters, you might want to consider the heights of your players. To use obvious examples, Aaron Judge would be more valuable because strike calls would be more accurately called and Jose Altuve would have more strikes against him. Teams should work to give batters practice with an automated strike zone to gain a sense of how the zone will be called and get used to more strikes on 0-2 counts and fewer balls on 3-0 counts. The automated strike zone would be called slightly differently, specifically on calls that catch the back of the plate that are rarely called strikes. While this advantage may be brief, you would want to work to have your pitchers aim to throw more pitches that would not be strikes under the old strike zone and would be under the automated zone, so that hitters will get caught looking at strikes that they are used to being called as balls. You also might want to prioritize signing pitchers who have repertoires that are more likely to take advantage of the automated zone. Without any actual knowledge, I would guess that late horizontal movement in pitches such as sliders and cutters would be pitch types that would play better with an automated zone, and looking for pitchers with those pitches would probably provide a non-trivial team building edge. 

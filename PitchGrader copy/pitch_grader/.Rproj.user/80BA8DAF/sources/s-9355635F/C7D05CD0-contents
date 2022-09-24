@@ -1,0 +1,257 @@
+---
+title: "Modeling Proportions"
+subtitle: "STAT 456: Generalized Linear and Mixed Models"
+author: "Xander Schwartz, Amherst College"
+date: "Spring 2022"
+output: 
+  beamer_presentation:
+    theme: boxes
+    colortheme: lily
+    fonttheme: structureitalicserif
+    slide_level: 2
+    fig_width: 3.6
+    fig_height: 2.4
+    df_print: kable
+    highlight:  kate
+    keep_tex: false
+    citation_package: natbib
+    includes:
+      in_header: ["templates/beamer-preamble.tex", "templates/math-preamble.tex"]
+biblio-style: unsrtnat
+fontsize: 10pt
+aspectratio: 169
+classoption: c, fleqn
+linestretch: 3
+colorlinks: true
+citecolor: blue
+urlcolor: blue
+---
+
+```{r setup, include=FALSE}
+# packages
+library(tidyverse)
+library(kableExtra)
+
+# settings
+knitr::opts_chunk$set(comment = " ")
+
+theme_set(theme_classic())
+```
+# Recap
+
+## Recap: Binomial Distribution
+
+Looking to estimate some *proportion* $y$ that can be modeled as a series of trials and successes or a series of *Bernoulli Trials* while, assuming that each trial is independent (i.e., a success or failure in one trial has no bearing on previous or future trials). Below is the PMF when $m$ is known and $\phi = 1$. 
+
+$$P(y;\mu,m)=\binom{m}{my}\mu^{my}(1-\mu)^{m(1-y)}$$
+
+The unit deviance for a binomial distribution is
+
+$$d(y,\mu) = 2(y \text{ log} \frac{y}{\mu} + (1-y)\text{ log}\frac{1-y}{1 - \mu})$$
+
+## Recap: Logistic Regression and the Logit Function
+
+Logistic regression is a form of regression used to predict a binary outcome. Logistic regression produces an expected proportion and relies on the *logit* function. 
+
+$\eta = \text{logit}(\mu) = \text{log} \frac{\mu}{1-\mu}$
+
+The logit function is also the canonical link function for the binomial distribution. 
+
+```{r}
+model_logit <- glm(am ~  wt, family = binomial(link = "logit"), 
+             data = mtcars)
+```
+
+## Recap: Logistic Regression and the Logit Function (cont.)
+
+\scriptsize
+```{r}
+summary(model_logit)
+```
+# Other Options
+
+## Probit
+
+The *Probit* link function is also commonly seen with a binomial distribution. $\text{probit}(\mu) = \eta = \phi^{-1}(\mu)$ where $\phi$ is the CDF of the normal distribution. 
+
+```{r}
+model_probit <- glm(am ~   wt, family = binomial(link = "probit"), 
+                    data = mtcars)
+```
+
+## Probit (cont.)
+
+\scriptsize
+```{r}
+summary(model_probit)
+```
+
+## Cloglog
+
+The *Complimentary Log-Log-Link Function* or *cloglog* provide a final alternative function. In cloglog $\eta = \text{log}(-\text{log}(1-\mu))$.
+
+```{r}
+model_cloglog <- glm(am ~  wt, family = binomial(link = "cloglog"),
+                     data = mtcars)
+```
+
+## Cloglog (cont.)
+
+\scriptsize
+```{r}
+summary(model_cloglog)
+```
+
+## Comparing Our Options
+Below you can see common link functions used with the binomial distribution: the logit, probit, and cloglog functions. Note the cloglog is asymmetrical, whereas probit and logit are quite similar.
+
+```{r, echo=F, fig.height= 2, fig.width=2, out.width="50%"}
+knitr::include_graphics("cloglog.png")
+```
+
+```{r, echo=F}
+tr.logit <- glm( am ~  wt, family = binomial(link = "logit"),
+                     data = mtcars)
+ tr.probit <- update( tr.logit, family=binomial(link="probit") )
+ tr.cll <- update( tr.logit, family=binomial(link="cloglog") )
+ tr.array <- rbind( coef(tr.logit), coef(tr.probit), coef(tr.cll))
+ tr.array <- cbind( tr.array, c(deviance(tr.logit),
+deviance(tr.probit), deviance(tr.cll)) )
+ colnames(tr.array) <- c("Intercept", "Weight","Residual dev.")
+ rownames(tr.array) <- c("Logit","Probit","Comp log-log")
+ tr.array
+```
+
+## Comparing Our Options (cont.)
+
+Below you can see common link functions used with the binomial distribution: the logit, probit, and cloglog functions. Note the cloglog is asymmetrical whereas probit and logit are quite similar.
+
+```{r, eval=F}
+model <- glm(am ~  wt, family = binomial, data = mtcars)
+```
+
+```{r, echo=F, eval=F}
+ newHrs <- seq( 1, 6, length=100)
+ newdf <- data.frame(wt=newHrs)
+ newP.logit <- predict( tr.logit, newdata=newdf, type="response")
+ newP.probit <- predict( tr.probit, newdata=newdf, type="response")
+ newP.cll <- predict( tr.cll, newdata=newdf, type="response")
+ plot(am ~  wt,
+                     data = mtcars,
+xlim=c(0, 6), ylim=c(0, 1),
+xlab="Weight (1000lbs)", ylab="Proportion of Manuel Cars")
+ lines( newP.logit ~ newHrs, lty=1, lwd=2, col = "red")
+ lines( newP.probit ~ newHrs, lty=2, lwd=2, col="blue")
+ lines( newP.cll ~ newHrs, lty=4, lwd=2, col= "green")
+legend("bottomleft", lwd=2, lty=c(1, 2, 4), col = c("red", "blue", "green"),
+legend=c("Logit","Probit","Comp. log-log"))
+
+data(mtcars)
+```
+```{r, echo=F, fig.height= 2, fig.width=2, out.width="50%"}
+knitr::include_graphics("cloglog2.png")
+```
+
+
+
+## Other Options 
+
+Note: There is also the *cauchit* link and *log* link that can be used to model a binary reesponse, but neither are frequently used.
+
+The cauchit link is based on the Cauchy distribution. 
+
+The log link is approximate to the logit link when $\mu$ is particularly small and is useful for modeling risk ratios and relative risks. 
+
+# Applications of Each Method
+
+## Median "Effective Dose" 
+
+You can also calculate the *median effective dose* or break-even point in which the probability is 50/50 (or any other probability) for either result, depending on your model. This can be found using the `dose.p` function in the `MASS` package. Mathematically, for any given proportion p, the estimate can be found using $\text{ED}(p) = \frac{g(p)-\beta_9}{\beta_1}$ where $g()$ is the link function.
+
+```{r}
+ED50s <- cbind("Logit" = MASS::dose.p(tr.logit, p = .5),
+"Probit" = MASS::dose.p(tr.probit, p = .5),
+"Cloglog" = MASS::dose.p(tr.cll), p = .5)
+ED50s
+```
+
+
+```{r, echo=F, eval=F}
+ED50s <- cbind("Logit" = MASS::dose.p(tr.logit, p = .25),
+"Probit" = MASS::dose.p(tr.probit, p = .25),
+"Cloglog" = MASS::dose.p(tr.cll), p = .25)
+ED50s
+```
+
+## Logit Application: Odds 
+
+As you may remember from STAT230, coefficients of a binomial distribution with a logit link con be interpreted as the log odds. In other words log(odds) $= \beta_0 + \beta_1x + ... \beta_ix_i$ and odds = $= \text{exp}(\beta_0) * \text{exp}(\beta_1)^x$. Odds can be translated to probability using $\frac{\text{odds}}{1+\text{odds}}$. 
+
+```{r}
+coef(model_logit)
+exp(12.04)*exp(-4.02)^2.5 # odds for 2500lb car
+exp(12.04)*exp(-4.02)^3 # odds for 3000lb car
+```
+
+
+## Probit Application: Tolerance Threshold
+
+Let's say you have a machine that will break down from overuse. On average, that overuse threshold, called a *tolerance threshold* is $\tau$. Still, it may break before or after depending on the machine (i.e. there is a fixed value at which each machine will break, but we are looking to define the distribution of those values). 
+
+We can define this threshold as following a $N(\tau_i,\sigma^2)$ where $\tau_i= g(\mu_i)=\beta_0 + \beta_1x_i$ where $g(\mu_i)$ is the probit link function. 
+
+You could create a similar tolerance threshold with a cloglog or logit function, but would find that cloglog would follow a $1-\text{exp}(-\text{exp}(y))$ distribution and logit would follow a $\frac{\text{exp}(y)}{1+\text{exp}(y)}$ distribution, whereas probit neatly follows the normal distribution. 
+
+## Cloglog Application: Assay Analysis
+
+Say you wanted to measure a proportion of something in a much larger population that is particularly difficult to measure (i.e., what is the frequency in a sample). 
+
+One example is trying to measure the proportion, $\lambda$, of cells with some disease or attribute against the entire population, but you can't practically measure at a cellular level. 
+
+Instead, you can take tiny samples of size $d_i$ and ask whether the disease is present at all in the sample. The probability of a positive result given $d_i$ is $\mu_i$. This can be viewed as a Poisson distribution:  
+
+$1- \mu_i = \text{exp}(-\lambda d_i)$
+
+## Cloglog Application: Assay Analysis (cont.)
+
+If we have
+
+$1- \mu_i = \text{exp}(-\lambda d_i)$
+
+You can take the log of both sides.
+
+$\text{log}(1-\mu_i)=-\lambda d_i$
+
+And then the log again! And then it's cloglog! 
+
+$\text{log}(-\text{log}(1-\mu_i))=\text{log}(\lambda) + \text{log}(d_i)$ 
+
+This can now be seen as a GLM.
+
+$g(\mu_i) = \beta_0 + \text{log}(d_i)$
+
+With which we can create confidence intervals! 
+
+$\hat\beta_0 \pm Z_{\alpha/2}\text{se}(\hat\beta_0)$
+
+# Final Notes
+
+## Overdispersion
+
+For a binomial distribution, $\text{Var}[y] = \mu(1-\mu)$, but the variation can exceed $\mu(1-\mu)$. This is called *overdispersion.* 
+
+Overdispersion is super problematic for GLMs, as the SEs are underestimated, so tests appear more significant.
+
+There are two common causes: $\mu_i$ are not constant between observations even when explanatory variables are unchanged or lack independence. 
+
+This can be tested if $\text{Var}[y_i] > \mu_i(1-\mu_i/m_i)$ and $\text{Var}[y_i] = \phi_i \mu_i(1-\mu_i)/m_i$
+
+## Words of Caution...
+
+Wald tests can also fail with parameter values that are exceptionally high or low, such as fitted values that are very close to 1 or 0 (the model will just assume always 0 or 1). 
+
+No typical goodness of fit tests to measure binary response variable models are useful. 
+
+Instead, you can rely on LRTs and score tests. 
+
+

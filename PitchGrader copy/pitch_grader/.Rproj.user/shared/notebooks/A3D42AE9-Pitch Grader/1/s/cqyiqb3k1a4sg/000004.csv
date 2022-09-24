@@ -1,0 +1,7 @@
+"0",""
+"0","fastball2 <- parsnip::decision_tree(mode = ""classification"") %>%"
+"0","  set_engine(""rpart"", control = rpart.control(cp = 0.005, minbucket = 10, maxdepth = 10)) %>%"
+"0","  fit(as.factor(grade) ~ ., data = left_join(aggregate, some_pitches %>% select(pitch_type, vx0, vy0)) %>% filter(pitch_type == ""FF"") %>% select(release_speed:wOBA, grade, -pfx_z, -release_pos_z, -release_extension, -vx0))"
+"1","Joining, by = c(""vx0"", ""vy0"")
+"
+"0","f2 <- rattle::fancyRpartPlot(fastball2$fit, main = ""What Makes a Fastball Good (grades)"")"

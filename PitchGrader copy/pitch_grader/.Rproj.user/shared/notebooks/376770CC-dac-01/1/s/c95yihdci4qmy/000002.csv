@@ -1,0 +1,7 @@
+"0","#glimpse(bankdata)"
+"0",""
+"0","#testing if missing data"
+"0","#nrow(bankdata %>% drop_na)"
+"0","#still 93 rows seems good"
+"0","psych::describe(bankdata,  skew = F) %>%"
+"0","  kable(caption = ""Table 1"", full_width = T)"

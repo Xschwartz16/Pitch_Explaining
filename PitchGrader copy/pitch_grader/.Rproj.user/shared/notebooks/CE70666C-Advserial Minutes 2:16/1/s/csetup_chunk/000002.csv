@@ -1,0 +1,32 @@
+"0","# Load necessary packages"
+"0","library(tidyverse)"
+"0","library(mosaic)"
+"0","library(mdsr)"
+"0","library(knitr)"
+"2","
+Attaching package: ‘knitr’
+
+"
+"2","The following object is masked _by_ ‘.GlobalEnv’:
+
+    kable
+
+"
+"0","library(kableExtra)"
+"0",""
+"0","# R Markdown options"
+"0","knitr::opts_chunk$set("
+"0","  tidy = FALSE, # display code as typed"
+"0","  size = ""small"", # slightly smaller font for code"
+"0","  fig.width = 4,"
+"0","  fig.height = 2.5,"
+"0","  fig.align = ""center"""
+"0",")"
+"0","theme_set(theme_bw())"
+"0","# Makes kable table nice just by adding `%>% kable()` to a table"
+"0","# Use `escape = FALSE` to use LaTeX inside of a table"
+"0","kable <- function(x, booktabs = TRUE, align = ""c"", format, digits = getOption(""digits""), row.names = NA, col.names = NA, caption = NULL, label = NULL, format.args = list(), escape = TRUE, full_width = NULL, bootstrap_options = ""basic"", position = ""center"", latex_options = c(""HOLD_position"", ""repeat_headers""), font_size = NULL, row_label_position = ""l"", ...) {"
+"0","  knitr::kable(x, booktabs = booktabs, align = align, format = format, digits = digits, row.names = row.names, col.names = col.names, caption = caption, label = label, format.args = format.args, escape = escape, ...) %>%"
+"0","    kableExtra::kable_styling(full_width = full_width, bootstrap_options = bootstrap_options, position = position, latex_options = latex_options, font_size = font_size, row_label_position = row_label_position, ...)"
+"0","}"
+"0","set.seed(1)"

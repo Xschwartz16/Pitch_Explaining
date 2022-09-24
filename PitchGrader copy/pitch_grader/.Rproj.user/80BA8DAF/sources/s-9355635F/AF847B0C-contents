@@ -1,0 +1,293 @@
+---
+title: Pitch Gradeer
+blinded: 0
+authors:
+  name: Xander Schwartz
+  affiliation: Cleveland Guardians
+output:
+  rticles::asa_article: 
+  redoc::redoc: 
+  word_document: default
+  keep_tex: no
+  number_section: no
+  highlight: pygments
+  pdf_document: default
+abstract: |
+  Insert Abstract
+bibliography: references.bib
+keywords:
+- Baseball
+- Sabermetrics
+- Mixture Models
+- K-Means
+- Beta-Binomial
+- Logistic Regression
+- ANOVA
+fontsize: 12pt
+subparagraph: yes
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.pos = "H")
+```
+
+```{r, setup = TRUE, include = FALSE}
+# Do not delete this chunk
+library(mosaic)
+library(readr)
+library(tidyr)
+library(psych)
+library(ggplot2)
+library(factoextra)
+library(cluster)
+library(rpart)
+library(DescTools)
+library(GGally)
+# devtools::install_github(repo = "BillPetti/baseballr")
+library(baseballr)
+library(ClusterR)
+library(rpart.plot)
+library(rattle)
+library(parsnip)
+library(rsample)
+library(mclust)
+library(latticeExtra)
+library(vioplot)
+library(keras)
+library(ResourceSelection)
+library(pscl)
+library(kableExtra)
+library(neuralnet)
+# Setting Rounding
+options(digits = 6)
+# Formatting
+knitr::opts_chunk$set(
+  echo = FALSE, warning = FALSE, message = FALSE, results = "hide", fig.width = 6,
+  fig.height = 4, comment = NA, fig.show = "hide", dpi = 300
+)
+# For any tables
+kable <- function(x, booktabs = TRUE, align = "c", format, digits = getOption("digits"), row.names = NA, col.names = NA, caption = NULL, label = NULL, format.args = list(), escape = TRUE, full_width = NULL, bootstrap_options = "basic", position = "center", latex_options = c("HOLD_position", "repeat_headers"), font_size = NULL, row_label_position = "l", ...) {
+  knitr::kable(x, booktabs = booktabs, align = align, format = format, digits = digits, row.names = row.names, col.names = col.names, caption = caption, label = label, format.args = format.args, escape = escape, ...) %>%
+    kableExtra::kable_styling(full_width = full_width, bootstrap_options = bootstrap_options, position = position, latex_options = latex_options, font_size = font_size, row_label_position = row_label_position, ...)
+}
+
+set.seed(101)
+```
+
+<!-- DATA READ IN -------------------------------------------------------------------------------->
+
+
+
+```{r}
+load(file = "allpitches15to21.rda")
+
+# some_pitches <- sample(all_pitches, 50000)
+some_pitches <- all_pitches %>% filter(game_year == 2021)
+
+names <- baseballr::get_chadwick_lu() %>%
+  mutate(name = paste(name_first, name_last)) %>%
+  select(key_mlbam, name)
+
+rm(all_pitches)
+```
+
+
+```{r}
+library(stringr)
+some_pitches <- some_pitches %>%
+  mutate(count = paste(balls, strikes, sep = "-")) %>%
+  mutate(new_count = ifelse(str_detect(string = description, "ball"),
+    paste((balls + 1), strikes, sep = "-"),
+    ifelse(str_detect(
+      string = description,
+      "strike"
+    ) & strikes != 2,
+    paste(balls, (strikes + 1), sep = "-"), count
+    )
+  ))
+
+justRes <- some_pitches %>% filter(!is.na(woba_value))
+
+mean_woba <- mean(justRes$woba_value)
+
+new <- justRes %>%
+  group_by(count) %>%
+  summarise(wOBA = mean(woba_value)) %>%
+  arrange(wOBA)
+
+
+next_pitch_woba <- left_join(some_pitches, new, by = c("new_count" = "count")) %>%
+  mutate(wOBA = ifelse(is.na(events), wOBA, woba_value))
+
+
+mean2 <- mean(next_pitch_woba$wOBA)
+
+# some_pitches%>%select(count, woba_value)%>%drop_na()%>%group_by(count)%>%summarise(woba_value=mean(woba_value_count))
+
+# some_pitches2 <- some_pitches %>% select(des, count, delta_run_exp, description) %>% filter(is.na(delta_run_exp))
+```
+
+```{r}
+ggplot(data = next_pitch_woba %>% select(wOBA) %>% drop_na(), aes(x = wOBA)) +
+  geom_density()
+ggplot(data = next_pitch_woba %>% select(wOBA, strikes) %>% drop_na(), aes(x = strikes, y = wOBA)) +
+  geom_jitter()
+```
+
+```{r}
+pitch_attributes <- next_pitch_woba %>%
+  select(release_speed, release_pos_z, release_pos_x, pfx_x, pfx_z, plate_z, plate_x, vx0, vy0, vz0, sz_top, sz_bot, effective_speed, release_spin_rate, release_extension, spin_axis, wOBA) %>%
+  drop_na()
+head(pitch_attributes)
+glimpse(pitch_attributes)
+
+table(pitch_attributes$wOBA)
+```
+
+
+```{r, eval=F}
+# nn <- neuralnet(wOBA ~ ., hidden = 5, data = pitch_attributes)
+# summary(multi)
+#
+# linear <- lm(wOBA ~ ., , data = pitch_attributes)
+#
+# cub <- Cubist::cubist(x = (pitch_attributes %>% select(-wOBA)), y = pitch_attributes$wOBA, committees = 5)
+# summary(cub)
+#
+#
+# summary(linear, digits = 5)
+```
+
+
+```{r}
+# multi <- nnet::multinom(as.factor(wOBA) ~ ., , data = pitch_attributes)
+
+# save(multi, file = "multi.rda")
+load("multi.rda")
+pitch_guesses <- cbind(pitch_attributes, multi$fitted.values)
+
+colnames(pitch_guesses)
+
+aggregate <- pitch_guesses %>% mutate(
+  final_pred =
+    `0` * 0 +
+      `0.159633427326327` * 0.159633427326327 +
+      `0.184045384507634` * 0.184045384507634 +
+      `0.205215893941638` * 0.205215893941638 +
+      `0.36669955599408` * 0.36669955599408 +
+      `0.391837723548586` * 0.391837723548586 +
+      `0.393045184153905` * 0.393045184153905 +
+      `0.39632332499305` * 0.39632332499305 +
+      `0.388219278597358` * 0.388219278597358 +
+      `0.407310893955845` * 0.407310893955845 +
+      `0.44570831283817` * 0.44570831283817 +
+      `0.584705083909181` * 0.584705083909181 +
+      `0.679508890770533` * 0.679508890770533 +
+      `0.7` * 0.7 +
+      `0.9` * 0.9 +
+      `1.25` * 1.25 +
+      `1.6` * 1.6 +
+      `2` * 2
+)
+
+glimpse(pitch_guesses)
+
+mean(aggregate$wOBA)
+mean(aggregate$final_pred)
+```
+
+
+
+
+```{r}
+
+
+fastball <- parsnip::decision_tree(mode = "regression") %>%
+  set_engine("rpart", control = rpart.control(cp = 0.005, minbucket = 10, maxdepth = 10)) %>%
+  fit(final_pred ~ ., data = left_join(aggregate, some_pitches %>% select(pitch_type, vx0, vy0)) %>% filter(pitch_type == "FF") %>% select(release_speed:wOBA, final_pred) %>% drop_na())
+
+
+
+rattle::fancyRpartPlot(fastball$fit, main = "What Makes a Fastball Good")
+```
+
+```{r}
+# q<- qnorm(mean = mean(testVec), sd = sd(testVec),p= seq(.001, .999, 1 / 13))
+# ggplot(data = as.data.frame(testVec)%>%sample(100000), aes(x = testVec))+geom_density()
+
+
+
+testVec <- aggregate$final_pred
+q <- vector()
+q[1] <- mean(testVec) + sd(testVec) * 2.25 # F
+q[2] <- mean(testVec) + sd(testVec) * 1.75 # D-
+q[3] <- mean(testVec) + sd(testVec) * 1.5 # D
+q[4] <- mean(testVec) + sd(testVec) * 1.25 # D+
+q[5] <- mean(testVec) + sd(testVec) * .75 # C-
+q[6] <- mean(testVec) + sd(testVec) * .5 # C
+q[7] <- mean(testVec) # C+
+q[8] <- mean(testVec) - sd(testVec) * .5 # B-
+q[9] <- mean(testVec) - sd(testVec) * .75 # B
+q[10] <- mean(testVec) - sd(testVec) * 1.25 # B+
+q[11] <- mean(testVec) - sd(testVec) * 1.5 # A-
+q[12] <- mean(testVec) - sd(testVec) * 1.75 # A
+q[13] <- mean(testVec) - sd(testVec) * 2 # A+
+
+
+aggregate <- aggregate %>% mutate(grade = ifelse(final_pred > q[2], "F", ifelse(final_pred > q[3], "D-", ifelse(final_pred > q[4], "D", ifelse(final_pred > q[5], "D+", ifelse(final_pred > q[6], "C-", ifelse(final_pred > q[7], "C", ifelse(final_pred > q[8], "C+", ifelse(final_pred > q[9], "B-", ifelse(final_pred > q[10], "B", ifelse(final_pred > q[11], "B+", ifelse(final_pred > q[12], "A-", ifelse(final_pred > q[13], "A", "A+")))))))))))))
+
+table(aggregate$grade)
+```
+
+
+```{r, fig.height=6, fig.width= 7.5}
+
+f1 <- rattle::fancyRpartPlot(fastball$fit, main = "What Makes a Fastball Good (wOBA)")
+
+fastball2 <- parsnip::decision_tree(mode = "classification") %>%
+  set_engine("rpart", control = rpart.control(cp = 0.005, minbucket = 10, maxdepth = 10)) %>%
+  fit(as.factor(grade) ~ ., data = left_join(aggregate, some_pitches %>% select(pitch_type, vx0, vy0)) %>% filter(pitch_type == "FF") %>% select(release_speed:wOBA, grade,-pfx_z))
+
+f2 <- rattle::fancyRpartPlot(fastball2$fit, main = "What Makes a Fastball Good (grades)")
+
+# cowplot::plot_grid(f1,f2)
+```
+
+```{r}
+# predicted_wOBAs <- left_join(inner_join(some_pitches,aggregate)%>% group_by(pitcher, pitch_type) %>% summarise(actual_wOBA = mean(wOBA), predicted_wOBA = mean(final_pred), pitch_count = n()),names, by = c("pitcher"="key_mlbam"))%>%mutate(differential = actual_wOBA-predicted_wOBA)%>%filter(pitch_count >= 100)
+
+# save(predicted_wOBAs, file = "predWoba.rda")
+load("predWoba.rda")
+```
+
+
+```{r}
+testVec2 <- predicted_wOBAs$predicted_wOBA
+q2 <- vector()
+q2[1] <- mean(testVec2) + sd(testVec2) * 2.25 # F
+q2[2] <- mean(testVec2) + sd(testVec2) * 1.75 # D-
+q2[3] <- mean(testVec2) + sd(testVec2) * 1.5 # D
+q2[4] <- mean(testVec2) + sd(testVec2) * 1.25 # D+
+q2[5] <- mean(testVec2) + sd(testVec2) * .75 # C-
+q2[6] <- mean(testVec2) + sd(testVec2) * .5 # C
+q2[7] <- mean(testVec2) # C+
+q2[8] <- mean(testVec2) - sd(testVec2) * .5 # B-
+q2[9] <- mean(testVec2) - sd(testVec2) * .75 # B
+q2[10] <- mean(testVec2) - sd(testVec2) * 1.25 # B+
+q2[11] <- mean(testVec2) - sd(testVec2) * 1.5 # A-
+q2[12] <- mean(testVec2) - sd(testVec2) * 1.75 # A
+q2[13] <- mean(testVec2) - sd(testVec2) * 2 # A+
+
+
+predicted_wOBAs <- predicted_wOBAs %>% mutate(grade = ifelse(predicted_wOBA > q2[2], "F", ifelse(predicted_wOBA > q2[3], "D-", ifelse(predicted_wOBA > q2[4], "D", ifelse(predicted_wOBA > q2[5], "D+", ifelse(predicted_wOBA > q2[6], "C-", ifelse(predicted_wOBA > q2[7], "C", ifelse(predicted_wOBA > q2[8], "C+", ifelse(predicted_wOBA > q2[9], "B-", ifelse(predicted_wOBA > q2[10], "B", ifelse(predicted_wOBA > q2[11], "B+", ifelse(predicted_wOBA > q2[12], "A-", ifelse(predicted_wOBA > q2[13], "A", "A+")))))))))))))
+
+
+cor(x = predicted_wOBAs$actual_wOBA, predicted_wOBAs$predicted_wOBA)
+
+
+
+ggplot(predicted_wOBAs %>% drop_na(), aes(col = pitch_type, x = predicted_wOBA, y = actual_wOBA)) +
+  geom_point() +
+  geom_abline() +
+  ggrepel::geom_label_repel(aes(label = name), max.overlaps = 7, box.padding = .1)
+```

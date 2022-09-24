@@ -1,0 +1,8 @@
+"0",""
+"0",""
+"0","fastball <- parsnip::decision_tree(mode = ""regression"") %>%"
+"0","  set_engine(""rpart"", control = rpart.control(cp = 0.005, minbucket = 10, maxdepth = 10)) %>%"
+"0","  fit(final_pred ~ ., data = left_join(aggregate, some_pitches %>% select(pitch_type, vx0, vy0)) %>% filter(pitch_type == ""FF"") %>% select(release_speed:wOBA, final_pred) %>% drop_na())"
+"1","Joining, by = c(""vx0"", ""vy0"")
+"
+"0","rattle::fancyRpartPlot(fastball$fit, main = ""What Makes a Fastball Good"")"

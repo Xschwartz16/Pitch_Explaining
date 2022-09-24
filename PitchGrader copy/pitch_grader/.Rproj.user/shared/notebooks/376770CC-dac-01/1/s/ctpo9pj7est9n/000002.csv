@@ -1,0 +1,3 @@
+"0","ggplot(bankdata, aes(x = bsal, fill = sex)) + geom_density(aes(alpha = .5)) + "
+"0","  guides(alpha = FALSE) + "
+"0","  labs(x = ""Starting Salary ($)"")"

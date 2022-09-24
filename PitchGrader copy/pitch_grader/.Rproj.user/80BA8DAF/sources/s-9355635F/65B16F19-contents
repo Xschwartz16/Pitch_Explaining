@@ -1,0 +1,115 @@
+---
+classoption: dvipsnames, svgnames
+output:
+  pdf_document:
+    number_section: true
+    highlight: pygments
+fontsize: 12pt
+subparagraph: yes
+header-includes:
+  - \usepackage{fancyhdr, titlesec, lastpage, float, bm}
+  - \usepackage{setspace}\doublespacing
+  - \lhead{Class Minutes \\ Xander Schwartz}
+  - \rhead{Adverserial Methods \\ 2/16/2022}
+  - \setcounter{section}{0}
+  - \setlength{\headheight}{26pt}
+  - \titlespacing{\section}{0pt}{12pt}{4pt}
+  - \titlespacing{\subsection}{0pt}{12pt}{4pt}
+  - \titlespacing{\subsubsection}{0pt}{12pt}{4pt}
+  - \floatplacement{figure}{H}
+  - \definecolor{codegray}{HTML}{f9f9f9}
+  - \definecolor{codeletter}{HTML}{002c6b}
+  - \let\textttOrig\texttt
+  - \renewcommand{\texttt}[1]{\textttOrig{\textbf{\textcolor{codeletter}{\colorbox{codegray}{#1}}}}}
+  - \definecolor{indigo}{RGB}{75, 0, 130}
+  - \definecolor{darkgreen}{RGB}{0, 128, 0}
+---
+\thispagestyle{fancy}
+```{r setup, include = FALSE}
+# Load necessary packages
+library(tidyverse)
+library(mosaic)
+library(mdsr)
+library(knitr)
+library(kableExtra)
+
+# R Markdown options
+knitr::opts_chunk$set(
+  tidy = FALSE, # display code as typed
+  size = "small", # slightly smaller font for code
+  fig.width = 4,
+  fig.height = 2.5,
+  fig.align = "center"
+)
+theme_set(theme_bw())
+# Makes kable table nice just by adding `%>% kable()` to a table
+# Use `escape = FALSE` to use LaTeX inside of a table
+kable <- function(x, booktabs = TRUE, align = "c", format, digits = getOption("digits"), row.names = NA, col.names = NA, caption = NULL, label = NULL, format.args = list(), escape = TRUE, full_width = NULL, bootstrap_options = "basic", position = "center", latex_options = c("HOLD_position", "repeat_headers"), font_size = NULL, row_label_position = "l", ...) {
+  knitr::kable(x, booktabs = booktabs, align = align, format = format, digits = digits, row.names = row.names, col.names = col.names, caption = caption, label = label, format.args = format.args, escape = escape, ...) %>%
+    kableExtra::kable_styling(full_width = full_width, bootstrap_options = bootstrap_options, position = position, latex_options = latex_options, font_size = font_size, row_label_position = row_label_position, ...)
+}
+set.seed(1)
+```
+
+# Class Discussion
+
+## Nash Equilibrium
+
+A Nash Equilibrium Diagram looks as follows
+
+```{r, echo=F}
+hrLogTable <- matrix(c("a", "b", "c", "d"),
+  ncol = 2, byrow = TRUE
+)
+colnames(hrLogTable) <- c("q", "1-q")
+rownames(hrLogTable) <- c(
+  "p", "1-p"
+)
+hrLogTable <- as.table(hrLogTable)
+hrLogTable %>% kable()
+```
+
+Here is the proof we went over for finding the Nash Equilibrium. 
+
+The Optimal p can be seen as $p* =$ arg  $p_{max}$ $q_{min}$ $p(qa + (1-q)b) +(1-p)(qc + (1-q)d))$ where p and q are both probabilities between 0 to 1 (inclusive). 
+
+To minimize $q(pa - pb + c - d - pc + pd) + pb + d - pd$ where $\alpha = (pa - pb + c - d - pc + pd)$.
+
+Therefore depending on the strategy, $\alpha$ will be either 0 or 1 if we are trying to minimize q. 
+
+To make p large, it will depend on the values of d and b, and be either 0 or 1. 
+
+## Liar's Dice
+
+In class we also played "Liar's Dice." The rules (via the PDF on moodle) are as follows 
+
+Each player begins with 5 dice and a cup to roll/hide them.
+
+1. All players publicly roll a single die. The player who rolls highest is Player
+One and goes first. (Break ties with a roll-off.)
+
+2. All players roll all their dice, looking at their result but keeping it hidden
+from the other players.
+
+3. Player one makes a bid.
+
+4. The next player (the player to Player One’s left) either makes a higher
+bid, or calls “Liar”. If they make a higher bid, play continues clockwise
+until somebody finally calls “Liar”. Note that you can only call “Liar” on
+your turn.
+
+# Homework
+
+## Stackelberg Game
+
+Can you come up with a *Stackelberg Game* in which it is better to go second (i.e. the first person must declare their strategy, not nessesirily move). The leader can declare some sort of strategy or probabaility distrubtion with randomness. If you cannot find such a game, can you prove that there is never a benefit to going second? 
+
+## Read Wild Patterns
+
+[Abstract](https://arxiv.org/abs/1712.0314): Learning-based pattern classifiers, including deep networks, have shown impressive performance in several application domains, ranging from computer vision to cybersecurity. However, it has also been shown that adversarial input perturbations carefully crafted either at training or at test time can easily subvert their predictions. The vulnerability of machine learning to such wild patterns (also referred to as adversarial examples), along with the design of suitable countermeasures, have been investigated in the research field of adversarial machine learning. In this work, we provide a thorough overview of the evolution of this research area over the last ten years and beyond, starting from pioneering, earlier work on the security of non-deep learning algorithms up to more recent work aimed to understand the security properties of deep learning algorithms, in the context of computer vision and cybersecurity tasks. We report interesting connections between these apparently-different lines of work, highlighting common misconceptions related to the security evaluation of machine-learning algorithms. We review the main threat models and attacks defined to this end, and discuss the main limitations of current work, along with the corresponding future challenges towards the design of more secure learning algorithms.
+
+## Continue Playing Liar's Dice
+
+Note down any strategies you find help you get better?
+
+Have you become more accurate in calling *Liar* over time? 

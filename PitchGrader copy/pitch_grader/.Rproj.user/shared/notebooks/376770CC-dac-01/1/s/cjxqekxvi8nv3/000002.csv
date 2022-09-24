@@ -1,0 +1,5 @@
+"0","set.seed(101) "
+"0","sample <- sample.int(n = nrow(bankdata), size = floor(.70*nrow(bankdata)), replace = F)"
+"0","train <- bankdata[sample, ]"
+"0","test  <- bankdata[-sample, ]"
+"0",""

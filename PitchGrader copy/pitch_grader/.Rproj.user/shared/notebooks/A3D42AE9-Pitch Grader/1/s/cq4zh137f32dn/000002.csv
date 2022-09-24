@@ -1,0 +1,4 @@
+"0","pitch_attributes <- next_pitch_woba %>%"
+"0","  select(release_speed, release_pos_z, release_pos_x, pfx_x, pfx_z, plate_z, plate_x, vx0, vy0, vz0, sz_top, sz_bot, effective_speed, release_spin_rate, release_extension, spin_axis, wOBA) %>%"
+"0","  drop_na()"
+"0","head(pitch_attributes)"

@@ -1,0 +1,103 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+
+\title{A Tutorial on KKT Conditions}
+\author{Quinten Mcelhiney, Jake Shapiro, Mahran Yousef, Vaibhav Shah }
+\date{March 2022}
+
+\begin{document}
+\maketitle
+
+\section{A Motivating Example}
+
+Suppose we wanted to solve the classic optimization problem of maximizing the area of an animal pen. In our problem, suppose we have 50 meters of fencing and want to create the maximum possible enclosed area. If the length of our pen is ${l}$ and the width is ${w}$, then we can express the area as:
+
+\begin{equation}
+{l*w = A}
+\end{equation} 
+where we seek to maximize ${A}$ subject to the constraint:
+\begin{equation}
+    {2l+2w = 50}
+\end{equation}
+This problem can be solved with basic algebra and calculus. First, we substitute to find that:
+\begin{equation}
+    2l = 50 - 2w 
+\end{equation}
+
+    so
+
+\begin{equation}
+    A = w*\frac{50-2w}{2}
+\end{equation}
+
+Then, taking the derivative with respect to w, we find a critical point at ${w=12.5}$. We can then solve for ${l=12.5}$, as well.
+This is a local maximum, and we have solved our optimization problem.
+
+It is true that this problem is solvable with basic methods. However, in more complex problems, we cannot use these classic tools. Consider if we changed the constraint to be:
+\begin{equation}
+     {2l+2w \leq 50}
+\end{equation}
+We would also have to include the constraints:
+\begin{equation}
+     {l, w \geq 0}
+\end{equation}
+
+We could complicate this even further. Suppose we also wanted the fence to create a square pen, and deviations from this shape are penalized. We would then want to minimize:
+\begin{equation}
+    p(l,w) = (l-w)^2
+\end{equation}
+
+While in this example, we intuitively know that the optimal values exist when ${2l+2w = 50}$ and the shape is a square, not all problems allow this quick conclusion.
+
+We have created an example of a constrained optimization problem that requires more complicated methods to solve. Karush-Kuhn-Tucker conditions are one such tool that allow us to take a constrained optimization problem without a simple answer and re-frame it as a problem that can be solved by simple algorithms. 
+
+
+%Q8 - nontrivial example
+
+\section{The Conditions Stated}
+
+A general form of the constrained optimization problems we're interested in can be written as follows: 
+    \begin{alignat*}{3}
+    maximize & \qquad f(x) & \qquad (1) \\
+    s.t. & \qquad g_i(x) -b_i \geq 0 \qquad i=1,...,k & (2) \\
+      & \qquad  h_j(x)-b_j =0 \qquad j=1,...,m & (3)
+    \end{alignat*}
+Notice that in this optimization problem, call it \textbf{P}, we make no assumptions about the functions f, g, and h. 
+
+ The KKT conditions for problem \textbf{P} are as follows:
+
+\begin{enumerate}
+    \item \textbf{Stationarity Condition} \newline
+        The Stationarity condition tells us that for the given variable pair \textit{u, v}, the point \textit{x} minimizes the Lagrangian \textit{L(x,u,v)}. 
+    \item \textbf{Complementary Slackness} \newline
+    This condition applies to the inequality constraints in \textbf{P}, and states that for equality constraint \textit{i}, either $h_i(x) = 0$ or the corresponding dual variable $u_i = 0$. 
+    \item \textbf{Primal Feasibility} \newline
+    Intuitively, this condition requires that \textit{x} must satisfy all the constraints specified in \textbf{P}. 
+    \item \textbf{Dual Feasibility} 
+    
+\end{enumerate}
+
+% Q3,Q4 
+
+\section{KKT and Our Example}
+%Q2-how KKT conditions work
+
+
+\section{Proof of Sufficiency}
+%  we can prove the sufficiency of these conditions 
+%graphical interpretation
+
+\section{Historical and Contemporary Application}
+
+Karush-Kuhn-Tucker Conditions were invented to solve non-linear programming problems and optimization problems with constraints that make them too complicated to use classic tools to solve. The first published work on this concept was by Kuhn and Tucker in 1951, though Karush was added to the name after it was discovered that he had written about them in 1939.
+
+Fundamentally, KKT conditions are used to solve constrained optimization problems. Optimization functions with constraints, though, is significantly harder than unconstrained problems because we are unable to use standard tools. KKTs are useful because they allow us to transform difficult problems into a form which is more easily solvable.
+
+Originally, KKT conditions were formulated as mathematical tools for generalizing the method of using Lagrange multipliers to optimize. Over time, they have been adopted in the computer science world.
+
+There are many applications for KKTs. One specific example is in adversarial machine learning. In adversarial machine learning, an actor may try to maximize the damage felt as a result of his attack, subject to constraints-- the abilities he possesses. This can be expressed rather simply as a constrained optimization problem, which we have shown can be reduced to a KKT and solved. 
+
+
+
+\end{document}

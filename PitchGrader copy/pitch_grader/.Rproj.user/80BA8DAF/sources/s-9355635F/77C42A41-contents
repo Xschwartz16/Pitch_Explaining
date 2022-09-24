@@ -1,0 +1,208 @@
+---
+title: "DynastyLeague2021"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(mosaic)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+library(tidyverse)
+library(GGally)
+
+
+
+```
+## R Markdown
+
+
+
+```{r}
+pitchers <- razzball_39_
+hitters <- razzball_40_
+pitchers2 <- FanGraphs_Leaderboard_2021_02_19T175056_818
+hitters2 <- FanGraphs_Leaderboard_2021_02_19T175045_104
+fantrax <- Fantrax_Players_Franchise_Legends_2_
+fangraphsWarH <- FanGraphs_Leaderboard_2021_02_19T235001_590 %>% select(Name,WAR)
+fangraphsWarP <- FanGraphs_Leaderboard_2021_02_19T235304_488 %>% select(Name,WAR)
+fangraphsWar <- rbind(fangraphsWarH,fangraphsWarP)
+fangraphsBoard <- fangraphs_the_board_data_1_
+updatedBoard <- fangraphs_the_board_data_1_copy
+
+hitters2 <- hitters2 %>% 
+  rename(
+    Name = PlayerName
+    )
+
+pitchers2 <- pitchers2 %>% 
+  rename(
+    Name = PlayerName
+    )
+fantrax <- fantrax %>% 
+  rename(
+    Name = Player
+    )
+```
+
+```{r}
+hitters <- hitters %>% mutate(FP = `1B` + `2B`*2+`3B`*3+HR*4.5+SB*1.5+CS*-.5+RBI+R+SO*-.5+BB+SF+SH)
+pitchers <- pitchers %>% mutate(FP = .5*G+IP*3+K+W*3+L*-3+QS*3+SV*3+HLD*2+ER*-2-H-BB-HBP-HR)
+
+
+allPitch <- merge(pitchers,pitchers2,all=TRUE, by = "Name")
+allPitch <- allPitch %>% 
+  filter(!is.na(Dollars))
+
+allHit <- merge(hitters,hitters2,all=TRUE, by = "Name")
+allHit <- allHit %>% 
+  filter(!is.na(Dollars)&!is.na(ESPN))
+
+#total <- merge(pitchers,hitters, all = TRUE)
+total <- merge(allPitch,allHit,all=TRUE)
+```
+
+```{r}
+playerPool = 26*30
+cash = 30*260 - playerPool
+rosterable <- top_n(total,playerPool,FP)
+repLev <- min(rosterable$FP)
+rosterable <- rosterable %>% mutate(repFP = FP-repLev)
+totalFP <- sum(rosterable$repFP)
+
+rosterable2 <- top_n(x = fantrax,n = playerPool, wt = FPts)
+rosterable2 <- ftrax[1:playerPool,]
+repLev2 <- min(rosterable2$FPts)
+rosterable2 <- rosterable2 %>% mutate(repFP = FPts-repLev)
+totalFP2 <- sum(rosterable$repFP)
+
+```
+
+```{r}
+total <- total %>% mutate(Value = cash * (FP-repLev)/totalFP+1)
+total <- total %>% mutate(Pos = ifelse(is.na(POS.y),ESPN,POS.y))
+
+
+fantrax <-fantrax %>% mutate(TraxVal = cash * (FPts-repLev2)/totalFP2+1)
+
+```
+
+```{r}
+quickVal <- total %>% select(Name, Team.x, Pos, FP,rPTS,Value, Dollars) %>% filter(!is.na(FP)) 
+
+
+#quickVal <- quickVal%>%mutate(FGval = ifelse(substring(Dollars,1)=="(",substring(Dollars,3,5),substring(Dollars,2,4)))
+
+quickVal <- quickVal%>%mutate(FGval2 = paste(Dollars,"@"))
+
+quickVal <- quickVal%>%mutate(FGval2 = ifelse(substring(FGval2,1,1)=="(",paste("-",qdapRegex::ex_between(FGval2, "$", ")")),qdapRegex::ex_between(FGval2, "$", "@")))
+
+quickVal <- quickVal %>% mutate(FGval = str_replace_all(FGval2, fixed(" "), ""))
+
+quickVal[, 6:ncol(quickVal)] <- lapply(6:ncol(quickVal), function(x) as.numeric(quickVal[[x]]))
+
+glimpse(quickVal)
+```
+
+
+```{r}
+better <- quickVal %>%  select(Name, Team.x, Pos, FP, rPTS, Value, FGval)
+
+better <- better%>%mutate(Val = (FGval+Value)/2)
+
+
+test <- merge(better,fantrax)
+test2<-merge(test,fangraphsWar)
+
+    
+moreData <- test2 %>% select(Name,Team,Pos,ADP, WAR, FP, rPTS,FPts, Value,FGval,TraxVal)
+
+moreData <- moreData %>% 
+  rename(
+    FangraphsFP = rPTS, FtraxFP = FPts
+    )
+
+moreData <- moreData %>% mutate(DollarValue = round((FGval+TraxVal+Value)/3,2))
+
+moreData <- moreData %>% mutate(ProjFP = round((FP+FangraphsFP+FtraxFP)/3,1))
+
+valMaker <- lm(data = moreData, DollarValue ~ ProjFP)
+summary(valMaker)
+```
+
+
+```{r}
+moreData <- moreData%>%mutate(QuickPos = ifelse(substring(moreData$Pos,0,2)=="C/","C",toupper(  substring(moreData$Pos,0,2)))) %>% filter(moreData$FtraxFP>0&WAR!=0.0)
+
+warMod <- lm(data=moreData, ProjFP ~ QuickPos:WAR)
+
+summary(warMod)
+
+pitchers <- moreData %>% filter(Pos == "SP"|Pos=="RP"|Pos=="SP/RP"|Pos=="RP/SP") %>% mutate(Rank = rank(100-DollarValue))
+
+moreData <- moreData %>% mutate(Rank = rank(100-DollarValue))
+moreData <- moreData %>% mutate(ConsenusVal = Rank/ADP)
+
+
+#quickVal2 <- merge(quickVal,Fantrax[,c("Age")])
+```
+
+
+```{r}
+ggplot(moreData, aes(x=DollarValue, col = Pos)) + geom_histogram(bins=10)
+  
+```
+
+
+```{r}
+#glimpse(fangraphsBoard)
+combinedBoard <- merge(fangraphsBoard, updatedBoard, all=TRUE, by="Name")
+#prospects <- fangraphsBoard%>%select(Name,Pos,Org,`Current Level`,ETA,Risk,FV,`Top 100`,`Org Rk`,ProjFP)
+bigBoard<- combinedBoard %>% mutate(Pos = ifelse(is.na(Pos.y),Pos.x,Pos.y))%>%
+  mutate(Org = ifelse(is.na(Org.y),Org.x,Org.y))%>%
+  mutate(`Current Level` = ifelse(is.na(`Current Level.y`),`Current Level.x`,`Current Level.y`))%>%
+  mutate(Risk = ifelse(is.na(Risk.y),Risk.x,Risk.y))%>%
+  mutate(FV = ifelse(is.na(FV.y),FV.x,FV.y))%>%
+    mutate(ETA = ifelse(is.na(ETA.y),ETA.x,ETA.y))%>%
+  mutate(`Top 100` = ifelse(is.na(`Top 100.y`),`Top 100.x`,`Top 100.y`))%>%
+  mutate(`Org Rk` = ifelse(is.na(`Org Rk.y`)|`Org Rk.y`==0,`Org Rk.x`,`Org Rk.y`))%>%
+    mutate(YearData = ifelse(is.na(ETA.y),2020,2021))
+  
+
+
+
+bigBoard <- bigBoard %>% mutate(QuickPos = ifelse((Pos == "CF" | Pos == "RF" | Pos== "LF"|Pos=="RF/LHP"), "OF",ifelse((Pos == "RHP"|Pos=="LHP"|Pos=="RHP/CF"|Pos=="RHP/SS"|Pos=="SS/RHP"|Pos=="3B/RHP"|Pos=="LHP/CF"),"SP",ifelse((Pos == "UTIL"),"DH",ifelse((Pos == "MIRP"|Pos=="SIRP"|Pos=="SIRP/CF"),"RP",Pos)))))
+
+
+
+
+bigBoard <- bigBoard %>% mutate(WAR = ifelse(FV == "80",7,ifelse(FV == "75",6,ifelse(FV == "70",5,ifelse(FV == "65",4,ifelse(FV == "60",3,ifelse(FV == "55",2.5,ifelse(FV == "50",2,ifelse(FV == "45",1.5,ifelse(FV == "45+",1.75,ifelse(FV == "40+",1.25,1)))))))))))
+
+
+
+bigBoard <- subset(bigBoard, YearData==2021|is.na(`Top 100`))
+
+
+
+bigBoard <- bigBoard %>% mutate(ProjFP = predict(warMod, bigBoard))
+```
+
+
+```{r}
+prospects <- bigBoard%>%select(Name,Pos,YearData,Org,`Current Level`,ETA,Risk,FV,`Top 100`,`Org Rk`,ProjFP)
+prospects <- prospects %>% filter(!(Name %in% PlayersTaken$Player))
+prospectPool = 20*30
+cash = 30*100 - prospectPool
+minorable <- top_n(prospects,prospectPool,ProjFP)
+minorRepLev <- min(minorable$ProjFP)
+minorable <- minorable %>% mutate(repFP = ProjFP-minorRepLev)
+totalProspectFP <- sum(minorable$repFP)
+
+prospects <- prospects %>% mutate(Value = cash * (ProjFP-minorRepLev)/totalProspectFP+1)
+```
+
+
+

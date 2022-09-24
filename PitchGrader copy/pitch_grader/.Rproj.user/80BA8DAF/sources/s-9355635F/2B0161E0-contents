@@ -1,0 +1,88 @@
+---
+classoption: dvipsnames, svgnames
+output:
+  pdf_document:
+    number_section: true
+    highlight: pygments
+fontsize: 12pt
+subparagraph: yes
+header-includes:
+  - \usepackage{fancyhdr, titlesec, lastpage, float, bm}
+  - \usepackage{setspace}\doublespacing
+  - \lhead{Amherst College \\ Statistics Department}
+  - \rhead{Xander Schwartz \\ aschwartz23@amherst.edu}
+  - \chead{\textbf{\Large Thesis Petition}}
+  - \setcounter{section}{0}
+  - \setlength{\headheight}{26pt}
+  - \titlespacing{\section}{0pt}{12pt}{4pt}
+  - \renewcommand{\baselinestretch}{1} 
+  - \titlespacing{\subsection}{0pt}{12pt}{4pt}
+  - \titlespacing{\subsubsection}{0pt}{12pt}{4pt}
+  - \floatplacement{figure}{H}
+  - \definecolor{codegray}{HTML}{f9f9f9}
+  - \definecolor{codeletter}{HTML}{002c6b}
+  - \let\textttOrig\texttt
+  - \renewcommand{\texttt}[1]{\textttOrig{\textbf{\textcolor{codeletter}{\colorbox{codegray}{#1}}}}}
+  - \definecolor{indigo}{RGB}{75, 0, 130}
+  - \definecolor{darkgreen}{RGB}{0, 128, 0}
+---
+\thispagestyle{fancy}
+```{r setup, include = FALSE}
+# Load necessary packages
+library(tidyverse)
+library(mosaic)
+library(mdsr)
+library(knitr)
+library(kableExtra)
+
+# R Markdown options
+knitr::opts_chunk$set(
+  tidy = FALSE, # display code as typed
+  size = "small", # slightly smaller font for code
+  fig.width = 4,
+  fig.height = 2.5,
+  fig.align = "center"
+)
+theme_set(theme_bw())
+# Makes kable table nice just by adding `%>% kable()` to a table
+# Use `escape = FALSE` to use LaTeX inside of a table
+kable <- function(x, booktabs = TRUE, align = "c", format, digits = getOption("digits"), row.names = NA, col.names = NA, caption = NULL, label = NULL, format.args = list(), escape = TRUE, full_width = NULL, bootstrap_options = "basic", position = "center", latex_options = c("HOLD_position", "repeat_headers"), font_size = NULL, row_label_position = "l", ...) {
+  knitr::kable(x, booktabs = booktabs, align = align, format = format, digits = digits, row.names = row.names, col.names = col.names, caption = caption, label = label, format.args = format.args, escape = escape, ...) %>%
+    kableExtra::kable_styling(full_width = full_width, bootstrap_options = bootstrap_options, position = position, latex_options = latex_options, font_size = font_size, row_label_position = row_label_position, ...)
+}
+set.seed(1)
+```
+
+
+
+Dear Amherst Statistics Department,
+
+I hope you are all well. Thank you all for taking the time to consider my petition to apply to write a thesis. 
+
+I am petitioning to write a thesis because I believe I would make a strong thesis candidate and that writing a thesis is an ideal next step in growing to become the best statistician I can be. Unfortunately, I fall just slightly below the GPA requirement to apply to write a thesis. From my understanding, the GPA requirement was implemented in the Spring of 2021 to first apply to the class of '23 (my year). While I recognize the benefits and good intent of adding such a threshold, I believe it is not the only way to capture the success of a statistics student, and in some ways, I believe it is misapplied to me, particularly given the timing of its implementation. 
+
+For full transparency, here are the statistics and statistics-adjacent courses I have completed, as well as the grades I received in them. 
+
+```{r, echo=F}
+Core_Courses <- c("Intermediate Statistics: B", "Data Science: A-", "Probability: B", "Theoretical Statistics: P")
+Non_Core <- c("Advanced Data Analysis: A-", "Multivariate Data Analysis: B", "Statistical Aspects of Competition: A-","")
+Other <- c("Machine Learning: A", "Data Mining: A-","","")
+
+df <- data.frame(Core_Courses, Non_Core, Other)
+
+df %>% kable(col.names = c("Core Courses","Non-Core Courses", "Stats-Related Courses"))
+
+```
+To give further context to my courses, I have taken at least one statistics course every semester at Amherst. In my Freshman Fall, I took intermediate statistics, and then the world turned upside down. Every course on the list above, except for Intermediate Statistics and Advanced Data Analysis, was taken remotely. While I know and am grateful for the time and effort put in by every professor to teach remotely, it does not match in-person instruction. The Sophomore Spring semester for me was a particular challenge as I was living off-campus and attempting to manage the rigor of living an adult life during a pandemic while managing my classes in a different time zone. As Professor Donges and Dr. McShane can both attest, I was still a frequent office hour attender and did not miss any assignments. I also chose to take four courses during every semester at Amherst, despite the option to only take three, as I only have four years at Amherst and I want to learn as much as I can. I am very grateful to be back on campus and enjoying in-person learning again. 
+
+As my transcript shows above, I am also very much ahead of the game in the statistics major. As of the end of this past semester, I have completed the entire statistics major, including electives and CS requirements. I have been a year ahead of the typical Amherst statistics major, taking 360/370 in my Sophomore year, and 495 in my Junior year. To the best of my knowledge, and I fully could be mistaken, I am the only member of the class of '23 to have finished the major as of this moment. This also means that I am a very different statistics student today than I was while taking many of the core courses. I would like to think I am a much stronger statistician today than I was during my Freshman or Sophomore years. I also know that I have flaws as a statistician. For example, I know I am a much stronger coder and data analyst than a proof writer. For that reason, I chose to take Generalized Linear Models this semester knowing that it would be a more proof-based class that I might struggle more in, but also a course that would allow me to improve where I know I am weakest. Furthermore, I have taken almost every statistics course offered at Amherst. Writing a thesis is the perfect opportunity to continue to push me, as there are not many statistics courses at Amherst left for next year. 
+
+I believe that my work in Advanced Data Analysis reflects my current ability as a statistics major. I felt like throughout the class I showed my aptitude in all parts of being a statistician as well as being among the most vocal class members in class discussion and asking questions, although Professor Horton could give a less biased account. In particular, I would like to highlight my capstone project. I wrote a paper that was over 30 pages, 1300 lines of code, and 8000 words and earned a 96 for the assignment. This paper was also accepted as one of four student papers for the upcoming Society for American Baseball Research Conference and I will be presenting my work this March at the conference. I believe I have proven my capacity for in-depth and independent research, much like that of a thesis. Furthermore, if my Advanced Data Analysis grade (an A-) was added to the core course average, it would also raise my GPA over the threshold. 
+
+I believe that I am among the most statistics-passionate students at Amherst. I lead one of the only statistics-oriented clubs at Amherst in the Sports Analytics Club, which I have been leading since Freshman year. I have brought in many speakers from statistics backgrounds and hopefully have helped to generate more interest in statistics at Amherst. During this academic year, I have been fortunate to serve as Dr. McShane's intern and hopefully have been able to contribute to the statistics department through this position. During much of my free time, you would find me working on a sports analytics stats project (right now I am trying to study baseball pitch design using neural networks) not for a class project, but because I genuinely enjoy the work. I am also looking forward to a data analyst position this summer with the Cleveland Guardian's MLB team. Statistics has never been just a class for me; it is the career I want to pursue and a hobby that I actively enjoy. 
+
+Thank you for taking the time to read and consider my petition (I apologize for its length).  I have pushed myself throughout my time at Amherst and am asking for the opportunity to continue to do so in Statistics. While I am eligible to write a thesis in Computer Science, Statistics is my home and where I want to be. If I only cared about writing a thesis or getting honors, I could do that in Computer Science, but I care about writing a thesis that reflects my passion and best work. While I am not the perfect statistician today, I know I have improved dramatically during my time at Amherst and would be disappointed to think the statistician I was in my Freshman Fall is now what is keeping me from being the statistician I want to be as I approach my Senior year. More than anything, I am petitioning because I am passionate and I care.
+
+Thank you so much for your consideration. Please do not hesitate to let me know if you have any questions. 
+
+Xander Schwartz

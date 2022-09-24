@@ -1,0 +1,243 @@
+---
+title: "XWAR"
+output: html_notebook
+---
+
+-   <div>
+
+    ```{r}
+
+    library(tidyverse)
+    library(dplyr)
+    options(scipen = 10)
+    library(nlme)
+    library(lme4)
+    library(mgcv)
+    library(readxl)
+    library(scam)
+    library(minpack.lm)
+    library(baseballr)
+    library(hoopR)
+    ```
+
+    
+
+```{r}
+
+annual_statcast_query <- function(season) {
+  
+  dates <- seq.Date(as.Date(paste0(season, '-03-25')),
+                    as.Date(paste0(season, '-10-05')), by = 'week')
+  
+  date_grid <- tibble(start_date = dates, 
+                      end_date = dates + 6)
+  
+  safe_savant <- safely(scrape_statcast_savant)
+  
+  payload <- map(.x = seq_along(date_grid$start_date), 
+                 ~{message(paste0('\nScraping week of ', date_grid$start_date[.x], '...\n'))
+                   
+                   payload <- safe_savant(start_date = date_grid$start_date[.x], 
+                                          end_date = date_grid$end_date[.x], type = 'pitcher')
+                   
+                   return(payload)
+                 })
+  
+  payload_df <- map(payload, 'result')
+  
+  number_rows <- map_df(.x = seq_along(payload_df), 
+                        ~{number_rows <- tibble(week = .x, 
+                                                number_rows = length(payload_df[[.x]]$game_date))}) %>%
+    filter(number_rows > 0) %>%
+    pull(week)
+  
+  payload_df_reduced <- payload_df[number_rows]
+  
+  combined <- payload_df_reduced %>%
+    bind_rows()
+  
+  return(combined)
+  
+}
+
+season21 <- annual_statcast_query(2021)
+save(season21, file="season21.rda")
+
+season22 <- annual_statcast_query(2022)
+save(season22, file="season22.rda")
+
+# names <- get_chadwick_lu()
+save(names, file = "names.rda")
+```
+
+```{r}
+load("season21.rda")
+bload("season22.rda")
+load("names.rda")
+
+speed <- baseballr::statcast_leaderboards("sprint_speed",year = 2022)
+
+season21wobaData <-season22 %>% filter(nchar(bb_type) > 1) %>% left_join(., speed %>% select(player_id, sprint_speed), by = c( "batter" = "player_id"))
+
+wobaVals <- season22 %>% group_by(strikes, balls) %>% summarise(wobaCount = mean(woba_value, na.rm = T), freq = n()) %>% filter(freq > 1) %>% select(-freq)
+avgWoba <- mean(season22$woba_value, na.rm= T)
+
+
+expWobaMod <- bam(data = season21wobaData ,
+                  woba_value ~ 
+                    s(launch_angle, bs = "cr") +
+                    s(launch_speed, bs = "cr", by = as.factor(hit_location)) + 
+                    te(launch_speed, launch_angle) + 
+                    s(sprint_speed, bs = "cr", by = as.factor(hit_location)) 
+                  )
+
+summary(expWobaMod)
+
+season21wobaData$predictedWoba <- predict(expWobaMod, newdata = season21wobaData)
+
+season21woba <- season22 %>% left_join(season21wobaData) %>%
+  mutate(balls2 = case_when(str_detect(description, "ball") ~ balls + 1, 
+                            T ~ as.double(balls)), 
+         strikes2 = case_when(str_detect(description, "strike") ~ strikes + 1,
+                            str_detect(description, "foul") & strikes < 2 ~ strikes + 1,
+                            T ~ as.double(strikes))) %>%
+  left_join(., wobaVals) %>%
+  left_join(., wobaVals %>% rename(wobaCount2 = wobaCount), by = c("balls2" = "balls", "strikes2" = "strikes")) %>% mutate(woba_change = case_when(
+    nchar(bb_type>1) & !is.na(predictedWoba) ~ predictedWoba, 
+    !is.na(woba_value)  ~ woba_value - avgWoba, 
+    !is.na(wobaCount) ~ wobaCount2 - wobaCount, 
+    T ~ -1000000
+  )) %>% filter(release_speed > 60) %>% left_join(., season22 %>% group_by(pitch_type) %>% summarise(count = n())) %>% filter(count > 1000) %>% 
+  mutate(distance_from_edge_x = case_when(plate_x > 0 ~ 19 - plate_x*12,
+                                         T~ 19 + plate_x*12),
+         distance_from_edge_z = case_when(plate_z > mean(plate_z) ~ sz_top - plate_z,
+                                        T ~ plate_z - sz_bot))%>% left_join(names %>%
+  mutate(pitcher_name = paste(name_first, name_last)) %>%
+  select(key_mlbam, pitcher_name), by = c("pitcher"="key_mlbam")) %>% 
+  left_join(., season22 %>% group_by(pitcher) %>% summarise(maxVelo = quantile(release_speed, .9, na.rm = T))) %>% mutate(mphDifferential = maxVelo - release_speed)
+
+
+
+rm(season22) 
+rm(season21wobaData)
+```
+
+```{r}
+pitchGrader <- bam(
+  woba_change ~ 
+    s(release_speed, bs = "cr", by = as.factor(pitch_type)) +
+    s(release_spin_rate, bs  = "cr", by = as.factor(pitch_type)) + 
+    s(spin_axis, bs = "cr") + 
+    te(release_speed, release_spin_rate) + 
+    s(release_pos_x, bs = "cr") +
+    s(release_pos_z, bs = "cr") +
+    s(distance_from_edge_x, bs  = "cr") + 
+    s(distance_from_edge_z, bs = "cr") + 
+    te(distance_from_edge_x, distance_from_edge_z) + 
+    s(mphDifferential, bs = "cr",  by = as.factor(pitch_type)) +
+    s(pfx_x, bs = "cr") + 
+    s(pfx_z, bs = "cr"), 
+   # te(release_pos_z, release_pos_x),
+  data = season21woba)
+
+save(pitchGrader, file = "pgbam22.rda")
+load("pgbam.rda")
+summary(pitchGrader)
+#plot(pitchGrader)
+
+season21woba$pitch_grade <- predict(pitchGrader, newdata = season21woba)
+
+
+```
+
+```{r}
+bestPitches <- 
+  season21woba %>% 
+  filter(!is.na(pitch_grade)) %>%
+  group_by(pitcher_name, pitch_type, pitch_name) %>% 
+  summarise(run_exp = mean(pitch_grade, na.rm = T), 
+            actual_run_exp = mean(woba_change, na.rm=T,),
+            stuffWAA = sum(pitch_grade, na.rm = T),
+            actualWAA = sum(woba_change, na.rm = T),
+            pitches = n()) 
+
+avgPitchScore <- bestPitches  %>%  
+  filter(pitches > 500) %>%
+  group_by(pitch_name) %>% 
+  summarise(avgGrade = mean(run_exp), 
+            sdGrade = sd(run_exp),
+            avgWoba = mean(actual_run_exp),
+            sdWoba = sd(actual_run_exp))
+
+pitchGrades <- bestPitches %>%
+  left_join(., avgPitchScore) %>%
+  mutate(grade = 5 - (run_exp - avgGrade)/sdGrade,
+         results = 5 - (actual_run_exp-avgWoba)/sdWoba,
+         stuffPlus = run_exp/avgGrade) %>% 
+  select(-contains("avg"), -contains("sd")) 
+
+bestPitchers <- pitchGrades %>% group_by(pitcher_name) %>%
+  summarise(avg_grade = weighted.mean(grade, pitches), 
+            avg_result = weighted.mean(results, pitches),
+            stuffPlus = weighted.mean(stuffPlus, pitches),
+            types_of_pitches = n(), 
+            total_pitches = sum(pitches),
+            stuffWAA = -sum(stuffWAA),
+            actualWAA = -sum(actualWAA)) %>%  
+  filter(total_pitches > 500) %>%
+  mutate(ovr_grade = scale(avg_grade) + 5, 
+         ovr_result = scale(avg_result) + 5)
+
+
+ggplot(bestPitchers, aes(x = ovr_grade, y = ovr_result)) + geom_point() + geom_abline()
+ggplot(bestPitchers, aes(x = stuffWAA, y = actualWAA)) + geom_point() + geom_abline()
+```
+
+```{r}
+results <- fg_pitcher_leaders(
+  x = 2022,
+  y = 2022,
+  league = "all",
+  qual = 20,
+  pitcher_type = "pit",
+  ind = 0
+)
+save(results, file  ="results.rda")
+comparison <- results %>% select(Name, G, GS, ERA, FIP, WAR) %>% mutate(SP = ifelse(GS > .5 * G, 1, 0)) %>% left_join(.,bestPitchers, by  = c("Name" = "pitcher_name")) %>% drop_na() 
+
+comparison <- comparison %>% 
+  mutate(stuffSPRP = case_when( 
+    SP == 1 ~ (ovr_grade-mean((comparison %>% filter(SP == 1))$ovr_grade))/sd((comparison %>% filter(SP == 1))$ovr_grade)+5,
+        T ~(ovr_grade-mean((comparison %>% filter(SP == 0))$ovr_grade))/sd((comparison %>% filter(SP == 0))$ovr_grade)+5
+    ),
+    resultSPRP = case_when( 
+    SP == 1 ~ (ovr_result-mean((comparison %>% filter(SP == 1))$ovr_result))/sd((comparison %>% filter(SP == 1))$ovr_result)+5,
+        T ~(ovr_result-mean((comparison %>% filter(SP == 0))$ovr_result))/sd((comparison %>% filter(SP == 0))$ovr_result)+5
+    ),
+     luck = resultSPRP - stuffSPRP) %>% select(-contains("avg_"),-contains("ovr_")) 
+
+
+
+ggplot(comparison, aes(x = WAR * 10, y  = actualWAA)) + geom_point() + geom_abline()+ geom_smooth(method = "lm") + geom_smooth()
+
+
+
+summary(lm(data = comparison, WAR*10 ~ actualWAA))
+summary(lm(data = comparison, WAR*10 ~ stuffWAA))
+
+```
+
+# best hitters
+
+```{r}
+bestHitters <- season21woba %>% 
+  group_by(batter, player_name) %>% 
+  summarise(xWoba = mean(woba_change-pitch_grade, na.rm = T),
+            xWobaProd = mean(woba_change, na.rm=T), 
+            woba = mean(woba_value, na.rm = T), 
+            avgPitchGrade = mean(pitch_grade, na.rm =T),
+            pitches = n()) %>% 
+  filter(pitches > 1000)
+
+
+```

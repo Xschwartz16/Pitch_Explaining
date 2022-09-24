@@ -1,0 +1,6 @@
+[1,"Installing 'aod' ...\n"]
+[2,"trying URL 'https://cran.rstudio.com/bin/macosx/contrib/4.1/aod_1.3.1.tgz'\n"]
+[2,"Content type 'application/x-gzip' length 380606 bytes (371 KB)\n==================================================\ndownloaded 371 KB\n\n"]
+[1,"The downloaded binary packages are in\n"]
+[1,"\t/var/folders/64/xtgnsjws6kx2kgf3xf017kf40000gs/T//RtmpOOZ9hB/downloaded_packages\n"]
+[2,"\n\n✔ Package 'aod' successfully installed.\n"]
